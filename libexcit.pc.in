@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libexcit
+Description: Extensive C Iterators
+Version: 0.0.1
+Libs: -L${libdir} -lexcit
+Cflags: -I${includedir}
