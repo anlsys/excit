@@ -1,39 +1,39 @@
 #include <errno.h>
 #include <stdlib.h>
-#include <citerators.h>
+#include <excit.h>
 
-struct citerator_func_table_s {
-	int (*alloc)(citerator_t data);
-	void (*free)(citerator_t data);
-	int (*copy)(citerator_t dst, const citerator_t src);
-	int (*next)(citerator_t data, citerator_index_t *indexes);
-	int (*peek)(const citerator_t data, citerator_index_t *indexes);
-	int (*size)(const citerator_t data, citerator_index_t *size);
-	int (*rewind)(citerator_t data);
-	int (*split)(const citerator_t data, citerator_index_t n,
-		     citerator_t *results);
-	int (*nth)(const citerator_t data, citerator_index_t n,
-		   citerator_index_t *indexes);
-	int (*n)(const citerator_t data, const citerator_index_t *indexes,
-		 citerator_index_t *n);
-	int (*pos)(const citerator_t iterator, citerator_index_t *n);
+struct excit_func_table_s {
+	int (*alloc)(excit_t data);
+	void (*free)(excit_t data);
+	int (*copy)(excit_t dst, const excit_t src);
+	int (*next)(excit_t data, excit_index_t *indexes);
+	int (*peek)(const excit_t data, excit_index_t *indexes);
+	int (*size)(const excit_t data, excit_index_t *size);
+	int (*rewind)(excit_t data);
+	int (*split)(const excit_t data, excit_index_t n,
+		     excit_t *results);
+	int (*nth)(const excit_t data, excit_index_t n,
+		   excit_index_t *indexes);
+	int (*n)(const excit_t data, const excit_index_t *indexes,
+		 excit_index_t *n);
+	int (*pos)(const excit_t iterator, excit_index_t *n);
 };
 
-struct citerator_s {
-	const struct citerator_func_table_s *functions;
-	citerator_index_t dimension;
-	enum citerator_type_e type;
+struct excit_s {
+	const struct excit_func_table_s *functions;
+	excit_index_t dimension;
+	enum excit_type_e type;
 	void *data;
 };
 
 /*--------------------------------------------------------------------*/
 
 struct slice_iterator_s {
-	citerator_t src;
-	citerator_t indexer;
+	excit_t src;
+	excit_t indexer;
 };
 
-static int slice_iterator_alloc(citerator_t data)
+static int slice_iterator_alloc(excit_t data)
 {
 	data->data = malloc(sizeof(struct slice_iterator_s));
 	if (!data->data)
@@ -46,152 +46,152 @@ static int slice_iterator_alloc(citerator_t data)
 	return 0;
 }
 
-static void slice_iterator_free(citerator_t data)
+static void slice_iterator_free(excit_t data)
 {
 	struct slice_iterator_s *iterator =
 	    (struct slice_iterator_s *) data->data;
 
-	citerator_free(iterator->src);
-	citerator_free(iterator->indexer);
+	excit_free(iterator->src);
+	excit_free(iterator->indexer);
 	free(data->data);
 }
 
-static int slice_iterator_copy(citerator_t dst, const citerator_t src)
+static int slice_iterator_copy(excit_t dst, const excit_t src)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *) src->data;
 	struct slice_iterator_s *result = (struct slice_iterator_s *) dst->data;
 
-	result->src = citerator_dup(iterator->src);
+	result->src = excit_dup(iterator->src);
 	if (!result->src)
 		return -ENOMEM;
-	result->indexer = citerator_dup(iterator->indexer);
+	result->indexer = excit_dup(iterator->indexer);
 	if (!result->indexer) {
-		citerator_free(iterator->src);
+		excit_free(iterator->src);
 		return -ENOMEM;
 	}
 	return 0;
 }
 
-static int slice_iterator_next(citerator_t data, citerator_index_t *indexes)
+static int slice_iterator_next(excit_t data, excit_index_t *indexes)
 {
 	struct slice_iterator_s *iterator =
 	    (struct slice_iterator_s *) data->data;
-	citerator_index_t n;
-	int err = citerator_next(iterator->indexer, &n);
+	excit_index_t n;
+	int err = excit_next(iterator->indexer, &n);
 
 	if (err)
 		return err;
-	return citerator_nth(iterator->src, n, indexes);
+	return excit_nth(iterator->src, n, indexes);
 }
 
-static int slice_iterator_peek(const citerator_t data,
-			       citerator_index_t *indexes)
+static int slice_iterator_peek(const excit_t data,
+			       excit_index_t *indexes)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *)data->data;
-	citerator_index_t n;
-	int err = citerator_peek(iterator->indexer, &n);
+	excit_index_t n;
+	int err = excit_peek(iterator->indexer, &n);
 
 	if (err)
 		return err;
-	return citerator_nth(iterator->src, n, indexes);
+	return excit_nth(iterator->src, n, indexes);
 }
 
-static int slice_iterator_size(const citerator_t data, citerator_index_t *size)
+static int slice_iterator_size(const excit_t data, excit_index_t *size)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *)data->data;
 
-	return citerator_size(iterator->indexer, size);
+	return excit_size(iterator->indexer, size);
 }
 
-static int slice_iterator_rewind(citerator_t data)
+static int slice_iterator_rewind(excit_t data)
 {
 	struct slice_iterator_s *iterator =
 	    (struct slice_iterator_s *) data->data;
 
-	return citerator_rewind(iterator->indexer);
+	return excit_rewind(iterator->indexer);
 }
 
-static int slice_iterator_nth(const citerator_t data, citerator_index_t n,
-			      citerator_index_t *indexes)
+static int slice_iterator_nth(const excit_t data, excit_index_t n,
+			      excit_index_t *indexes)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *)data->data;
-	citerator_index_t p;
-	int err = citerator_nth(iterator->indexer, n, &p);
+	excit_index_t p;
+	int err = excit_nth(iterator->indexer, n, &p);
 
 	if (err)
 		return err;
-	return citerator_nth(iterator->src, p, indexes);
+	return excit_nth(iterator->src, p, indexes);
 }
 
-static int slice_iterator_n(const citerator_t data,
-			    const citerator_index_t *indexes,
-			    citerator_index_t *n)
+static int slice_iterator_n(const excit_t data,
+			    const excit_index_t *indexes,
+			    excit_index_t *n)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *)data->data;
-	citerator_index_t inner_n;
-	int err = citerator_n(iterator->src, indexes, &inner_n);
+	excit_index_t inner_n;
+	int err = excit_n(iterator->src, indexes, &inner_n);
 
 	if (err)
 		return err;
-	return citerator_n(iterator->indexer, &inner_n, n);
+	return excit_n(iterator->indexer, &inner_n, n);
 }
 
-static int slice_iterator_pos(const citerator_t data, citerator_index_t *n)
+static int slice_iterator_pos(const excit_t data, excit_index_t *n)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *)data->data;
 
-	return citerator_pos(iterator->indexer, n);
+	return excit_pos(iterator->indexer, n);
 }
 
-static int slice_iterator_split(const citerator_t data, citerator_index_t n,
-				citerator_t *results)
+static int slice_iterator_split(const excit_t data, excit_index_t n,
+				excit_t *results)
 {
 	const struct slice_iterator_s *iterator =
 	    (const struct slice_iterator_s *)data->data;
-	int err = citerator_split(iterator->indexer, n, results);
+	int err = excit_split(iterator->indexer, n, results);
 
 	if (err)
 		return err;
 	if (!results)
 		return 0;
 	for (int i = 0; i < n; i++) {
-		citerator_t tmp;
-		citerator_t tmp2;
+		excit_t tmp;
+		excit_t tmp2;
 
 		tmp = results[i];
-		results[i] = citerator_alloc(CITERATOR_SLICE);
+		results[i] = excit_alloc(EXCIT_SLICE);
 		if (!results[i]) {
-			citerator_free(tmp);
+			excit_free(tmp);
 			err = -ENOMEM;
 			goto error;
 		}
-		tmp2 = citerator_dup(iterator->src);
+		tmp2 = excit_dup(iterator->src);
 		if (!tmp2) {
-			citerator_free(tmp);
+			excit_free(tmp);
 			err = -ENOMEM;
 			goto error;
 		}
-		err = citerator_slice_init(results[i], tmp, tmp2);
+		err = excit_slice_init(results[i], tmp, tmp2);
 		if (err) {
-			citerator_free(tmp);
-			citerator_free(tmp2);
+			excit_free(tmp);
+			excit_free(tmp2);
 			goto error;
 		}
 	}
 	return 0;
 error:
 	for (int i = 0; i < n; i++)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 	return err;
 }
 
-static const struct citerator_func_table_s citerator_slice_func_table = {
+static const struct excit_func_table_s excit_slice_func_table = {
 	slice_iterator_alloc,
 	slice_iterator_free,
 	slice_iterator_copy,
@@ -205,21 +205,21 @@ static const struct citerator_func_table_s citerator_slice_func_table = {
 	slice_iterator_pos
 };
 
-int citerator_slice_init(citerator_t iterator, citerator_t src,
-			 citerator_t indexer)
+int excit_slice_init(excit_t iterator, excit_t src,
+			 excit_t indexer)
 {
-	if (!iterator || iterator->type != CITERATOR_SLICE || !src || !indexer
+	if (!iterator || iterator->type != EXCIT_SLICE || !src || !indexer
 	    || indexer->dimension != 1)
 		return -EINVAL;
 	struct slice_iterator_s *it =
 	    (struct slice_iterator_s *) iterator->data;
-	citerator_index_t size_src;
-	citerator_index_t size_indexer;
-	int err = citerator_size(src, &size_src);
+	excit_index_t size_src;
+	excit_index_t size_indexer;
+	int err = excit_size(src, &size_src);
 
 	if (err)
 		return err;
-	err = citerator_size(indexer, &size_indexer);
+	err = excit_size(indexer, &size_indexer);
 	if (err)
 		return err;
 	if (size_indexer > size_src)
@@ -233,11 +233,11 @@ int citerator_slice_init(citerator_t iterator, citerator_t src,
 /*--------------------------------------------------------------------*/
 
 struct product_iterator_s {
-	citerator_index_t count;
-	citerator_t *iterators;
+	excit_index_t count;
+	excit_t *iterators;
 };
 
-static int product_iterator_alloc(citerator_t data)
+static int product_iterator_alloc(excit_t data)
 {
 	data->data = malloc(sizeof(struct product_iterator_s));
 	if (!data->data)
@@ -250,19 +250,19 @@ static int product_iterator_alloc(citerator_t data)
 	return 0;
 }
 
-static void product_iterator_free(citerator_t data)
+static void product_iterator_free(excit_t data)
 {
 	struct product_iterator_s *iterator =
 	    (struct product_iterator_s *) data->data;
 	if (iterator->iterators) {
-		for (int i = 0; i < iterator->count; i++)
-			citerator_free(iterator->iterators[i]);
+		for (excit_index_t i = 0; i < iterator->count; i++)
+			excit_free(iterator->iterators[i]);
 		free(iterator->iterators);
 	}
 	free(data->data);
 }
 
-static int product_iterator_copy(citerator_t dst, const citerator_t src)
+static int product_iterator_copy(excit_t dst, const excit_t src)
 {
 	const struct product_iterator_s *iterator =
 	    (const struct product_iterator_s *)src->data;
@@ -270,13 +270,13 @@ static int product_iterator_copy(citerator_t dst, const citerator_t src)
 	    (struct product_iterator_s *) dst->data;
 
 	result->iterators =
-	    (citerator_t *) malloc(iterator->count * sizeof(citerator_t));
+	    (excit_t *) malloc(iterator->count * sizeof(excit_t));
 	if (!result->iterators)
 		return -ENOMEM;
-	int i;
+	excit_index_t i;
 
 	for (i = 0; i < iterator->count; i++) {
-		result->iterators[i] = citerator_dup(iterator->iterators[i]);
+		result->iterators[i] = excit_dup(iterator->iterators[i]);
 		if (!result->iterators[i]) {
 			i--;
 			goto error;
@@ -293,13 +293,13 @@ error:
 	return -ENOMEM;
 }
 
-static int product_iterator_rewind(citerator_t data)
+static int product_iterator_rewind(excit_t data)
 {
 	struct product_iterator_s *iterator =
 	    (struct product_iterator_s *) data->data;
 
-	for (int i = 0; i < iterator->count; i++) {
-		int err = citerator_rewind(iterator->iterators[i]);
+	for (excit_index_t i = 0; i < iterator->count; i++) {
+		int err = excit_rewind(iterator->iterators[i]);
 
 		if (err)
 			return err;
@@ -307,12 +307,12 @@ static int product_iterator_rewind(citerator_t data)
 	return 0;
 }
 
-static int product_iterator_size(const citerator_t data,
-				 citerator_index_t *size)
+static int product_iterator_size(const excit_t data,
+				 excit_index_t *size)
 {
 	const struct product_iterator_s *iterator =
 	    (const struct product_iterator_s *) data->data;
-	citerator_index_t tmp_size = 0;
+	excit_index_t tmp_size = 0;
 
 	if (!size)
 		return -EINVAL;
@@ -320,9 +320,9 @@ static int product_iterator_size(const citerator_t data,
 		*size = 0;
 	else {
 		*size = 1;
-		for (int i = 0; i < iterator->count; i++) {
+		for (excit_index_t i = 0; i < iterator->count; i++) {
 			int err =
-			    citerator_size(iterator->iterators[i], &tmp_size);
+			    excit_size(iterator->iterators[i], &tmp_size);
 
 			if (err) {
 				*size = 0;
@@ -334,10 +334,10 @@ static int product_iterator_size(const citerator_t data,
 	return 0;
 }
 
-static int product_iterator_nth(const citerator_t data, citerator_index_t n,
-				citerator_index_t *indexes)
+static int product_iterator_nth(const excit_t data, excit_index_t n,
+				excit_index_t *indexes)
 {
-	int size;
+	excit_index_t size;
 	int err = product_iterator_size(data, &size);
 
 	if (err)
@@ -348,16 +348,16 @@ static int product_iterator_nth(const citerator_t data, citerator_index_t n,
 	    (const struct product_iterator_s *) data->data;
 
 	if (indexes) {
-		citerator_index_t subsize = 0;
-		citerator_index_t offset = data->dimension;
+		excit_index_t subsize = 0;
+		excit_index_t offset = data->dimension;
 
-		for (int i = iterator->count - 1; i >= 0; i--) {
+		for (excit_index_t i = iterator->count - 1; i >= 0; i--) {
 			offset -= iterator->iterators[i]->dimension;
-			err = citerator_size(iterator->iterators[i], &subsize);
+			err = excit_size(iterator->iterators[i], &subsize);
 			if (err)
 				return err;
 			err =
-			    citerator_nth(iterator->iterators[i], n % subsize,
+			    excit_nth(iterator->iterators[i], n % subsize,
 					  indexes + offset);
 			if (err)
 				return err;
@@ -367,27 +367,27 @@ static int product_iterator_nth(const citerator_t data, citerator_index_t n,
 	return 0;
 }
 
-static int product_iterator_n(const citerator_t data,
-			      const citerator_index_t *indexes,
-			      citerator_index_t *n)
+static int product_iterator_n(const excit_t data,
+			      const excit_index_t *indexes,
+			      excit_index_t *n)
 {
 	const struct product_iterator_s *iterator =
 	    (const struct product_iterator_s *) data->data;
 
 	if (iterator->count == 0)
 		return -EINVAL;
-	citerator_index_t offset = 0;
-	citerator_index_t product = 0;
-	citerator_index_t inner_n;
-	citerator_index_t subsize;
+	excit_index_t offset = 0;
+	excit_index_t product = 0;
+	excit_index_t inner_n;
+	excit_index_t subsize;
 
-	for (int i = 0; i < iterator->count; i++) {
+	for (excit_index_t i = 0; i < iterator->count; i++) {
 		int err =
-		    citerator_n(iterator->iterators[i], indexes + offset,
+		    excit_n(iterator->iterators[i], indexes + offset,
 				&inner_n);
 		if (err)
 			return err;
-		err = citerator_size(iterator->iterators[i], &subsize);
+		err = excit_size(iterator->iterators[i], &subsize);
 		if (err)
 			return err;
 		product *= subsize;
@@ -399,23 +399,23 @@ static int product_iterator_n(const citerator_t data,
 	return 0;
 }
 
-static int product_iterator_pos(const citerator_t data, citerator_index_t *n)
+static int product_iterator_pos(const excit_t data, excit_index_t *n)
 {
 	const struct product_iterator_s *iterator =
 	    (const struct product_iterator_s *) data->data;
 
 	if (iterator->count == 0)
 		return -EINVAL;
-	citerator_index_t product = 0;
-	citerator_index_t inner_n;
-	citerator_index_t subsize;
+	excit_index_t product = 0;
+	excit_index_t inner_n;
+	excit_index_t subsize;
 
-	for (int i = 0; i < iterator->count; i++) {
-		int err = citerator_pos(iterator->iterators[i], &inner_n);
+	for (excit_index_t i = 0; i < iterator->count; i++) {
+		int err = excit_pos(iterator->iterators[i], &inner_n);
 
 		if (err)
 			return err;
-		err = citerator_size(iterator->iterators[i], &subsize);
+		err = excit_size(iterator->iterators[i], &subsize);
 		if (err)
 			return err;
 		product *= subsize;
@@ -426,17 +426,17 @@ static int product_iterator_pos(const citerator_t data, citerator_index_t *n)
 	return 0;
 }
 
-static inline int product_iterator_peeknext_helper(citerator_t data,
-						   citerator_index_t *indexes,
+static inline int product_iterator_peeknext_helper(excit_t data,
+						   excit_index_t *indexes,
 						   int next)
 {
 	struct product_iterator_s *iterator =
 	    (struct product_iterator_s *) data->data;
 	int err;
 	int looped;
-	int i;
-	citerator_index_t *next_indexes;
-	citerator_index_t offset = data->dimension;
+	excit_index_t i;
+	excit_index_t *next_indexes;
+	excit_index_t offset = data->dimension;
 
 	if (iterator->count == 0)
 		return -EINVAL;
@@ -449,11 +449,11 @@ static inline int product_iterator_peeknext_helper(citerator_t data,
 			next_indexes = NULL;
 		if (looped)
 			err =
-			    citerator_cyclic_next(iterator->iterators[i],
+			    excit_cyclic_next(iterator->iterators[i],
 						  next_indexes, &looped);
 		else
 			err =
-			    citerator_peek(iterator->iterators[i],
+			    excit_peek(iterator->iterators[i],
 					   next_indexes);
 		if (err)
 			return err;
@@ -464,29 +464,29 @@ static inline int product_iterator_peeknext_helper(citerator_t data,
 	} else
 		next_indexes = NULL;
 	if (looped)
-		err = citerator_next(iterator->iterators[0], next_indexes);
+		err = excit_next(iterator->iterators[0], next_indexes);
 	else
-		err = citerator_peek(iterator->iterators[0], next_indexes);
+		err = excit_peek(iterator->iterators[0], next_indexes);
 	if (err)
 		return err;
 	return 0;
 }
 
-static int product_iterator_peek(const citerator_t data,
-				 citerator_index_t *indexes)
+static int product_iterator_peek(const excit_t data,
+				 excit_index_t *indexes)
 {
 	return product_iterator_peeknext_helper(data, indexes, 0);
 }
 
-static int product_iterator_next(citerator_t data, citerator_index_t *indexes)
+static int product_iterator_next(excit_t data, excit_index_t *indexes)
 {
 	return product_iterator_peeknext_helper(data, indexes, 1);
 }
 
-static int product_iterator_split(const citerator_t data, citerator_index_t n,
-				  citerator_t *results)
+static int product_iterator_split(const excit_t data, excit_index_t n,
+				  excit_t *results)
 {
-	int size;
+	excit_index_t size;
 	int err = product_iterator_size(data, &size);
 
 	if (err)
@@ -495,63 +495,63 @@ static int product_iterator_split(const citerator_t data, citerator_index_t n,
 		return -EDOM;
 	if (!results)
 		return 0;
-	citerator_t range = citerator_alloc(CITERATOR_RANGE);
+	excit_t range = excit_alloc(EXCIT_RANGE);
 
 	if (!range)
 		return -ENOMEM;
-	err = citerator_range_init(range, 0, size - 1, 1);
+	err = excit_range_init(range, 0, size - 1, 1);
 	if (err)
 		goto error1;
-	err = citerator_split(range, n, results);
+	err = excit_split(range, n, results);
 	if (err)
 		goto error1;
 	for (int i = 0; i < n; i++) {
-		citerator_t tmp, tmp2;
+		excit_t tmp, tmp2;
 
-		tmp = citerator_dup(data);
+		tmp = excit_dup(data);
 		if (!tmp)
 			goto error2;
 		tmp2 = results[i];
-		results[i] = citerator_alloc(CITERATOR_SLICE);
+		results[i] = excit_alloc(EXCIT_SLICE);
 		if (!results[i]) {
-			citerator_free(tmp2);
+			excit_free(tmp2);
 			goto error2;
 		}
-		err = citerator_slice_init(results[i], tmp, tmp2);
+		err = excit_slice_init(results[i], tmp, tmp2);
 		if (err) {
-			citerator_free(tmp2);
+			excit_free(tmp2);
 			goto error2;
 		}
 	}
-	citerator_free(range);
+	excit_free(range);
 	return 0;
 error2:
 	for (int i = 0; i < n; i++)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 error1:
-	citerator_free(range);
+	excit_free(range);
 	return err;
 }
 
-int citerator_product_count(const citerator_t iterator,
-			    citerator_index_t *count)
+int excit_product_count(const excit_t iterator,
+			    excit_index_t *count)
 {
-	if (!iterator || iterator->type != CITERATOR_PRODUCT || !count)
+	if (!iterator || iterator->type != EXCIT_PRODUCT || !count)
 		return -EINVAL;
 	*count = ((struct product_iterator_s *) iterator->data)->count;
 	return 0;
 }
 
-int citerator_product_split_dim(const citerator_t iterator,
-				citerator_index_t dim, citerator_index_t n,
-				citerator_t *results)
+int excit_product_split_dim(const excit_t iterator,
+				excit_index_t dim, excit_index_t n,
+				excit_t *results)
 {
-	if (!iterator || iterator->type != CITERATOR_PRODUCT)
+	if (!iterator || iterator->type != EXCIT_PRODUCT)
 		return -EINVAL;
 	if (n <= 0)
 		return -EDOM;
-	int count;
-	int err = citerator_product_count(iterator, &count);
+	excit_index_t count;
+	int err = excit_product_count(iterator, &count);
 
 	if (err)
 		return err;
@@ -560,60 +560,60 @@ int citerator_product_split_dim(const citerator_t iterator,
 	struct product_iterator_s *product_iterator =
 	    (struct product_iterator_s *) iterator->data;
 
-	err = citerator_split(product_iterator->iterators[dim], n, results);
+	err = excit_split(product_iterator->iterators[dim], n, results);
 	if (err)
 		return err;
 	if (!results)
 		return 0;
 	for (int i = 0; i < n; i++) {
-		citerator_t tmp = results[i];
+		excit_t tmp = results[i];
 
-		results[i] = citerator_dup(iterator);
+		results[i] = excit_dup(iterator);
 		if (!tmp) {
-			citerator_free(tmp);
+			excit_free(tmp);
 			err = -ENOMEM;
 			goto error;
 		}
 		struct product_iterator_s *new_product_iterator =
 		    (struct product_iterator_s *) results[i]->data;
-		citerator_free(new_product_iterator->iterators[dim]);
+		excit_free(new_product_iterator->iterators[dim]);
 		new_product_iterator->iterators[dim] = tmp;
 	}
 	return 0;
 error:
 	for (int i = 0; i < n; i++)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 	return err;
 }
 
-int citerator_product_add_copy(citerator_t iterator, citerator_t added_iterator)
+int excit_product_add_copy(excit_t iterator, excit_t added_iterator)
 {
 	int err = 0;
-	citerator_t copy = citerator_dup(added_iterator);
+	excit_t copy = excit_dup(added_iterator);
 
 	if (!copy)
 		return -EINVAL;
-	err = citerator_product_add(iterator, copy);
+	err = excit_product_add(iterator, copy);
 	if (err) {
-		citerator_free(added_iterator);
+		excit_free(added_iterator);
 		return err;
 	}
 	return 0;
 }
 
-int citerator_product_add(citerator_t iterator, citerator_t added_iterator)
+int excit_product_add(excit_t iterator, excit_t added_iterator)
 {
-	if (!iterator || iterator->type != CITERATOR_PRODUCT || !iterator->data
+	if (!iterator || iterator->type != EXCIT_PRODUCT || !iterator->data
 	    || !added_iterator)
 		return -EINVAL;
 
 	struct product_iterator_s *product_iterator =
 	    (struct product_iterator_s *) iterator->data;
-	int mew_count = product_iterator->count + 1;
+	excit_index_t mew_count = product_iterator->count + 1;
 
-	citerator_t *new_its =
-	    (citerator_t *) realloc(product_iterator->iterators,
-				    mew_count * sizeof(citerator_t));
+	excit_t *new_its =
+	    (excit_t *) realloc(product_iterator->iterators,
+				    mew_count * sizeof(excit_t));
 	if (!new_its)
 		return -ENOMEM;
 	product_iterator->iterators = new_its;
@@ -623,7 +623,7 @@ int citerator_product_add(citerator_t iterator, citerator_t added_iterator)
 	return 0;
 }
 
-static const struct citerator_func_table_s citerator_product_func_table = {
+static const struct excit_func_table_s excit_product_func_table = {
 	product_iterator_alloc,
 	product_iterator_free,
 	product_iterator_copy,
@@ -640,15 +640,15 @@ static const struct citerator_func_table_s citerator_product_func_table = {
 /*--------------------------------------------------------------------*/
 
 struct circular_fifo_s {
-	citerator_index_t length;
-	citerator_index_t start;
-	citerator_index_t end;
-	citerator_index_t size;
-	citerator_index_t *buffer;
+	excit_index_t length;
+	excit_index_t start;
+	excit_index_t end;
+	excit_index_t size;
+	excit_index_t *buffer;
 };
 
 static void circular_fifo_add(struct circular_fifo_s *fifo,
-			      citerator_index_t elem)
+			      excit_index_t elem)
 {
 	if (fifo->size == fifo->length) {
 		fifo->start = (fifo->start + 1) % fifo->length;
@@ -661,10 +661,10 @@ static void circular_fifo_add(struct circular_fifo_s *fifo,
 }
 
 static void circular_fifo_dump(const struct circular_fifo_s *fifo,
-			       citerator_index_t *vals)
+			       excit_index_t *vals)
 {
-	citerator_index_t i;
-	citerator_index_t j;
+	excit_index_t i;
+	excit_index_t j;
 
 	for (i = 0, j = fifo->start; i < fifo->size; i++) {
 		vals[i] = fifo->buffer[j];
@@ -673,12 +673,12 @@ static void circular_fifo_dump(const struct circular_fifo_s *fifo,
 }
 
 struct cons_iterator_s {
-	citerator_t iterator;
-	citerator_index_t n;
+	excit_t iterator;
+	excit_index_t n;
 	struct circular_fifo_s fifo;
 };
 
-static int cons_iterator_alloc(citerator_t data)
+static int cons_iterator_alloc(excit_t data)
 {
 	data->data = malloc(sizeof(struct cons_iterator_s));
 	if (!data->data)
@@ -696,22 +696,22 @@ static int cons_iterator_alloc(citerator_t data)
 	return 0;
 }
 
-static void cons_iterator_free(citerator_t data)
+static void cons_iterator_free(excit_t data)
 {
 	struct cons_iterator_s *iterator =
 	    (struct cons_iterator_s *) data->data;
 
-	citerator_free(iterator->iterator);
+	excit_free(iterator->iterator);
 	free(iterator->fifo.buffer);
 	free(data->data);
 }
 
-static int cons_iterator_copy(citerator_t ddst, const citerator_t dsrc)
+static int cons_iterator_copy(excit_t ddst, const excit_t dsrc)
 {
 	struct cons_iterator_s *dst = (struct cons_iterator_s *) ddst->data;
 	const struct cons_iterator_s *src =
 	    (const struct cons_iterator_s *)dsrc->data;
-	citerator_t copy = citerator_dup(src->iterator);
+	excit_t copy = excit_dup(src->iterator);
 
 	if (!copy)
 		return -EINVAL;
@@ -722,10 +722,10 @@ static int cons_iterator_copy(citerator_t ddst, const citerator_t dsrc)
 	dst->fifo.end = src->fifo.end;
 	dst->fifo.size = src->fifo.size;
 	dst->fifo.buffer =
-	    (citerator_index_t *) malloc(src->fifo.length *
-					 sizeof(citerator_index_t));
+	    (excit_index_t *) malloc(src->fifo.length *
+					 sizeof(excit_index_t));
 	if (!dst->fifo.buffer) {
-		citerator_free(copy);
+		excit_free(copy);
 		return -ENOMEM;
 	}
 	for (int i = 0; i < dst->fifo.length; i++)
@@ -733,12 +733,12 @@ static int cons_iterator_copy(citerator_t ddst, const citerator_t dsrc)
 	return 0;
 }
 
-static int cons_iterator_size(const citerator_t data, citerator_index_t *size)
+static int cons_iterator_size(const excit_t data, excit_index_t *size)
 {
 	const struct cons_iterator_s *iterator =
 	    (const struct cons_iterator_s *)data->data;
-	int tmp_size = 0;
-	int err = citerator_size(iterator->iterator, &tmp_size);
+	excit_index_t tmp_size = 0;
+	int err = excit_size(iterator->iterator, &tmp_size);
 
 	if (err)
 		return err;
@@ -746,10 +746,10 @@ static int cons_iterator_size(const citerator_t data, citerator_index_t *size)
 	return 0;
 }
 
-static int cons_iterator_split(const citerator_t data, citerator_index_t n,
-			       citerator_t *results)
+static int cons_iterator_split(const excit_t data, excit_index_t n,
+			       excit_t *results)
 {
-	int size;
+	excit_index_t size;
 	int err = cons_iterator_size(data, &size);
 
 	if (err)
@@ -758,50 +758,50 @@ static int cons_iterator_split(const citerator_t data, citerator_index_t n,
 		return -EDOM;
 	if (!results)
 		return 0;
-	citerator_t range = citerator_alloc(CITERATOR_RANGE);
+	excit_t range = excit_alloc(EXCIT_RANGE);
 
 	if (!range)
 		return -ENOMEM;
-	err = citerator_range_init(range, 0, size - 1, 1);
+	err = excit_range_init(range, 0, size - 1, 1);
 	if (err)
 		goto error1;
-	err = citerator_split(range, n, results);
+	err = excit_split(range, n, results);
 	if (err)
 		goto error1;
 	int i;
 
 	for (i = 0; i < n; i++) {
-		citerator_t tmp, tmp2;
+		excit_t tmp, tmp2;
 
-		tmp = citerator_dup(data);
+		tmp = excit_dup(data);
 		if (!tmp)
 			goto error2;
 		tmp2 = results[i];
-		results[i] = citerator_alloc(CITERATOR_SLICE);
+		results[i] = excit_alloc(EXCIT_SLICE);
 		if (!results[i]) {
-			citerator_free(tmp2);
+			excit_free(tmp2);
 			goto error2;
 		}
-		err = citerator_slice_init(results[i], tmp, tmp2);
+		err = excit_slice_init(results[i], tmp, tmp2);
 		if (err) {
-			citerator_free(tmp2);
+			excit_free(tmp2);
 			goto error2;
 		}
 	}
-	citerator_free(range);
+	excit_free(range);
 	return 0;
 error2:
 	for (; i >= 0; i--)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 error1:
-	citerator_free(range);
+	excit_free(range);
 	return err;
 }
 
-static int cons_iterator_nth(const citerator_t data, citerator_index_t n,
-			     citerator_index_t *indexes)
+static int cons_iterator_nth(const excit_t data, excit_index_t n,
+			     excit_index_t *indexes)
 {
-	int size;
+	excit_index_t size;
 	int err = cons_iterator_size(data, &size);
 
 	if (err)
@@ -815,7 +815,7 @@ static int cons_iterator_nth(const citerator_t data, citerator_index_t n,
 	if (indexes) {
 		for (int i = 0; i < iterator->n; i++) {
 			err =
-			    citerator_nth(iterator->iterator, n + i,
+			    excit_nth(iterator->iterator, n + i,
 					  indexes + dim * i);
 			if (err)
 				return err;
@@ -824,14 +824,14 @@ static int cons_iterator_nth(const citerator_t data, citerator_index_t n,
 	return 0;
 }
 
-static int cons_iterator_n(const citerator_t data,
-			   const citerator_index_t *indexes,
-			   citerator_index_t *n)
+static int cons_iterator_n(const excit_t data,
+			   const excit_index_t *indexes,
+			   excit_index_t *n)
 {
 	const struct cons_iterator_s *iterator =
 	    (const struct cons_iterator_s *) data->data;
-	citerator_index_t inner_n, inner_n_tmp;
-	int err = citerator_n(iterator->iterator, indexes, &inner_n);
+	excit_index_t inner_n, inner_n_tmp;
+	int err = excit_n(iterator->iterator, indexes, &inner_n);
 
 	if (err)
 		return err;
@@ -839,7 +839,7 @@ static int cons_iterator_n(const citerator_t data,
 
 	for (int i = 1; i < iterator->n; i++) {
 		err =
-		    citerator_n(iterator->iterator, indexes + dim * i,
+		    excit_n(iterator->iterator, indexes + dim * i,
 				&inner_n_tmp);
 		if (err)
 			return err;
@@ -852,12 +852,12 @@ static int cons_iterator_n(const citerator_t data,
 	return 0;
 }
 
-static int cons_iterator_pos(const citerator_t data, citerator_index_t *n)
+static int cons_iterator_pos(const excit_t data, excit_index_t *n)
 {
-	citerator_index_t inner_n;
+	excit_index_t inner_n;
 	const struct cons_iterator_s *iterator =
 	    (const struct cons_iterator_s *) data->data;
-	int err = citerator_pos(iterator->iterator, &inner_n);
+	int err = excit_pos(iterator->iterator, &inner_n);
 
 	if (err)
 		return err;
@@ -866,8 +866,8 @@ static int cons_iterator_pos(const citerator_t data, citerator_index_t *n)
 	return 0;
 }
 
-static int cons_iterator_peek(const citerator_t data,
-			      citerator_index_t *indexes)
+static int cons_iterator_peek(const excit_t data,
+			      excit_index_t *indexes)
 {
 	const struct cons_iterator_s *iterator =
 	    (const struct cons_iterator_s *) data->data;
@@ -878,15 +878,15 @@ static int cons_iterator_peek(const citerator_t data,
 	if (indexes) {
 		circular_fifo_dump(&iterator->fifo, indexes);
 		err =
-		    citerator_peek(iterator->iterator, indexes + dim * (n - 1));
+		    excit_peek(iterator->iterator, indexes + dim * (n - 1));
 	} else
-		err = citerator_peek(iterator->iterator, NULL);
+		err = excit_peek(iterator->iterator, NULL);
 	if (err)
 		return err;
 	return 0;
 }
 
-static int cons_iterator_next(citerator_t data, citerator_index_t *indexes)
+static int cons_iterator_next(excit_t data, excit_index_t *indexes)
 {
 	struct cons_iterator_s *iterator =
 	    (struct cons_iterator_s *) data->data;
@@ -897,9 +897,9 @@ static int cons_iterator_next(citerator_t data, citerator_index_t *indexes)
 	if (indexes) {
 		circular_fifo_dump(&iterator->fifo, indexes);
 		err =
-		    citerator_next(iterator->iterator, indexes + dim * (n - 1));
+		    excit_next(iterator->iterator, indexes + dim * (n - 1));
 	} else
-		err = citerator_next(iterator->iterator, NULL);
+		err = excit_next(iterator->iterator, NULL);
 	if (err)
 		return err;
 	if (indexes)
@@ -908,11 +908,11 @@ static int cons_iterator_next(citerator_t data, citerator_index_t *indexes)
 	return 0;
 }
 
-static int cons_iterator_rewind(citerator_t data)
+static int cons_iterator_rewind(excit_t data)
 {
 	struct cons_iterator_s *iterator =
 	    (struct cons_iterator_s *) data->data;
-	int err = citerator_rewind(iterator->iterator);
+	int err = excit_rewind(iterator->iterator);
 
 	if (err)
 		return err;
@@ -924,7 +924,7 @@ static int cons_iterator_rewind(citerator_t data)
 		int err;
 
 		err =
-		    citerator_next(iterator->iterator,
+		    excit_next(iterator->iterator,
 				   iterator->fifo.buffer +
 				   iterator->iterator->dimension * i);
 		if (err)
@@ -935,15 +935,15 @@ static int cons_iterator_rewind(citerator_t data)
 	return 0;
 }
 
-int citerator_cons_init(citerator_t iterator, citerator_t src,
-			citerator_index_t n)
+int excit_cons_init(excit_t iterator, excit_t src,
+			excit_index_t n)
 {
-	int src_size;
+	excit_index_t src_size;
 	int err;
 
-	if (!iterator || iterator->type != CITERATOR_CONS || !src || n <= 0)
+	if (!iterator || iterator->type != EXCIT_CONS || !src || n <= 0)
 		return -EINVAL;
-	err = citerator_size(src, &src_size);
+	err = excit_size(src, &src_size);
 	if (err)
 		return err;
 	if (src_size < n)
@@ -952,14 +952,14 @@ int citerator_cons_init(citerator_t iterator, citerator_t src,
 	    (struct cons_iterator_s *) iterator->data;
 
 	free(cons_iterator->fifo.buffer);
-	citerator_free(cons_iterator->iterator);
+	excit_free(cons_iterator->iterator);
 	iterator->dimension = n * src->dimension;
 	cons_iterator->iterator = src;
 	cons_iterator->n = n;
 	cons_iterator->fifo.length = src->dimension * (n - 1);
 	cons_iterator->fifo.buffer =
-	    (citerator_index_t *) malloc(cons_iterator->fifo.length *
-					 sizeof(citerator_index_t));
+	    (excit_index_t *) malloc(cons_iterator->fifo.length *
+					 sizeof(excit_index_t));
 	if (!cons_iterator->fifo.buffer)
 		return -ENOMEM;
 	err = cons_iterator_rewind(iterator);
@@ -970,7 +970,7 @@ int citerator_cons_init(citerator_t iterator, citerator_t src,
 	return 0;
 }
 
-static const struct citerator_func_table_s citerator_cons_func_table = {
+static const struct excit_func_table_s excit_cons_func_table = {
 	cons_iterator_alloc,
 	cons_iterator_free,
 	cons_iterator_copy,
@@ -987,12 +987,12 @@ static const struct citerator_func_table_s citerator_cons_func_table = {
 /*--------------------------------------------------------------------*/
 
 struct repeat_iterator_s {
-	citerator_t iterator;
-	citerator_index_t n;
-	citerator_index_t counter;
+	excit_t iterator;
+	excit_index_t n;
+	excit_index_t counter;
 };
 
-static int repeat_iterator_alloc(citerator_t data)
+static int repeat_iterator_alloc(excit_t data)
 {
 	data->data = malloc(sizeof(struct repeat_iterator_s));
 	if (!data->data)
@@ -1006,21 +1006,21 @@ static int repeat_iterator_alloc(citerator_t data)
 	return 0;
 }
 
-static void repeat_iterator_free(citerator_t data)
+static void repeat_iterator_free(excit_t data)
 {
 	struct repeat_iterator_s *iterator =
 	    (struct repeat_iterator_s *) data->data;
 
-	citerator_free(iterator->iterator);
+	excit_free(iterator->iterator);
 	free(data->data);
 }
 
-static int repeat_iterator_copy(citerator_t ddst, const citerator_t dsrc)
+static int repeat_iterator_copy(excit_t ddst, const excit_t dsrc)
 {
 	struct repeat_iterator_s *dst = (struct repeat_iterator_s *) ddst->data;
 	const struct repeat_iterator_s *src =
 	    (const struct repeat_iterator_s *)dsrc->data;
-	citerator_t copy = citerator_dup(src->iterator);
+	excit_t copy = excit_dup(src->iterator);
 
 	if (!copy)
 		return -EINVAL;
@@ -1030,33 +1030,33 @@ static int repeat_iterator_copy(citerator_t ddst, const citerator_t dsrc)
 	return 0;
 }
 
-static int repeat_iterator_peek(const citerator_t data,
-				citerator_index_t *indexes)
+static int repeat_iterator_peek(const excit_t data,
+				excit_index_t *indexes)
 {
 	const struct repeat_iterator_s *iterator =
 	    (const struct repeat_iterator_s *) data->data;
 
-	return citerator_peek(iterator->iterator, indexes);
+	return excit_peek(iterator->iterator, indexes);
 }
 
-static int repeat_iterator_next(citerator_t data, citerator_index_t *indexes)
+static int repeat_iterator_next(excit_t data, excit_index_t *indexes)
 {
 	struct repeat_iterator_s *iterator =
 	    (struct repeat_iterator_s *) data->data;
 
 	iterator->counter++;
 	if (iterator->counter < iterator->n)
-		return citerator_peek(iterator->iterator, indexes);
+		return excit_peek(iterator->iterator, indexes);
 	iterator->counter = 0;
-	return citerator_next(iterator->iterator, indexes);
+	return excit_next(iterator->iterator, indexes);
 }
 
-static int repeat_iterator_size(const citerator_t data,
-				citerator_index_t *size)
+static int repeat_iterator_size(const excit_t data,
+				excit_index_t *size)
 {
 	const struct repeat_iterator_s *iterator =
 	    (const struct repeat_iterator_s *) data->data;
-	int err = citerator_size(iterator->iterator, size);
+	int err = excit_size(iterator->iterator, size);
 
 	if (err)
 		return err;
@@ -1064,19 +1064,19 @@ static int repeat_iterator_size(const citerator_t data,
 	return 0;
 }
 
-static int repeat_iterator_rewind(citerator_t data)
+static int repeat_iterator_rewind(excit_t data)
 {
 	struct repeat_iterator_s *iterator =
 	    (struct repeat_iterator_s *) data->data;
 
 	iterator->counter = 0;
-	return citerator_rewind(iterator->iterator);
+	return excit_rewind(iterator->iterator);
 }
 
-static int repeat_iterator_nth(const citerator_t data, citerator_index_t n,
-			       citerator_index_t *val)
+static int repeat_iterator_nth(const excit_t data, excit_index_t n,
+			       excit_index_t *val)
 {
-	int size;
+	excit_index_t size;
 	int err = repeat_iterator_size(data, &size);
 
 	if (err)
@@ -1086,15 +1086,15 @@ static int repeat_iterator_nth(const citerator_t data, citerator_index_t n,
 	const struct repeat_iterator_s *iterator =
 	    (const struct repeat_iterator_s *) data->data;
 
-	return citerator_nth(iterator->iterator, n / iterator->n, val);
+	return excit_nth(iterator->iterator, n / iterator->n, val);
 }
 
-static int repeat_iterator_pos(const citerator_t data, citerator_index_t *n)
+static int repeat_iterator_pos(const excit_t data, excit_index_t *n)
 {
-	citerator_index_t inner_n;
+	excit_index_t inner_n;
 	const struct repeat_iterator_s *iterator =
 	    (const struct repeat_iterator_s *) data->data;
-	int err = citerator_pos(iterator->iterator, &inner_n);
+	int err = excit_pos(iterator->iterator, &inner_n);
 
 	if (err)
 		return err;
@@ -1103,39 +1103,39 @@ static int repeat_iterator_pos(const citerator_t data, citerator_index_t *n)
 	return 0;
 }
 
-static int repeat_iterator_split(const citerator_t data, citerator_index_t n,
-				 citerator_t *results)
+static int repeat_iterator_split(const excit_t data, excit_index_t n,
+				 excit_t *results)
 {
 	const struct repeat_iterator_s *iterator =
 	    (const struct repeat_iterator_s *) data->data;
-	int err = citerator_split(iterator->iterator, n, results);
+	int err = excit_split(iterator->iterator, n, results);
 
 	if (err)
 		return err;
 	if (!results)
 		return 0;
 	for (int i = 0; i < n; i++) {
-		citerator_t tmp;
+		excit_t tmp;
 
 		tmp = results[i];
-		results[i] = citerator_alloc(CITERATOR_REPEAT);
+		results[i] = excit_alloc(EXCIT_REPEAT);
 		if (!results[i]) {
-			citerator_free(tmp);
+			excit_free(tmp);
 			err = -ENOMEM;
 			goto error;
 		}
-		err = citerator_repeat_init(results[i], tmp, iterator->n);
+		err = excit_repeat_init(results[i], tmp, iterator->n);
 		if (err)
 			goto error;
 	}
 	return 0;
 error:
 	for (int i = 0; i < n; i++)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 	return err;
 }
 
-static const struct citerator_func_table_s citerator_repeat_func_table = {
+static const struct excit_func_table_s excit_repeat_func_table = {
 	repeat_iterator_alloc,
 	repeat_iterator_free,
 	repeat_iterator_copy,
@@ -1149,14 +1149,14 @@ static const struct citerator_func_table_s citerator_repeat_func_table = {
 	repeat_iterator_pos
 };
 
-int citerator_repeat_init(citerator_t iterator, citerator_t src,
-			  citerator_index_t n)
+int excit_repeat_init(excit_t iterator, excit_t src,
+			  excit_index_t n)
 {
-	if (!iterator || iterator->type != CITERATOR_REPEAT || !src || n <= 0)
+	if (!iterator || iterator->type != EXCIT_REPEAT || !src || n <= 0)
 		return -EINVAL;
 	struct repeat_iterator_s *repeat_iterator =
 	    (struct repeat_iterator_s *) iterator->data;
-	citerator_free(repeat_iterator->iterator);
+	excit_free(repeat_iterator->iterator);
 	iterator->dimension = src->dimension;
 	repeat_iterator->iterator = src;
 	repeat_iterator->n = n;
@@ -1167,16 +1167,16 @@ int citerator_repeat_init(citerator_t iterator, citerator_t src,
 /*--------------------------------------------------------------------*/
 
 struct hilbert2d_iterator_s {
-	citerator_index_t n;
-	citerator_t range_iterator;
+	excit_index_t n;
+	excit_t range_iterator;
 };
 
 /* Helper functions from: https://en.wikipedia.org/wiki/Hilbert_curve */
 
 //rotate/flip a quadrant appropriately
-static void rot(citerator_index_t n, citerator_index_t *x,
-		citerator_index_t *y, citerator_index_t rx,
-		citerator_index_t ry)
+static void rot(excit_index_t n, excit_index_t *x,
+		excit_index_t *y, excit_index_t rx,
+		excit_index_t ry)
 {
 	if (ry == 0) {
 		if (rx == 1) {
@@ -1184,7 +1184,7 @@ static void rot(citerator_index_t n, citerator_index_t *x,
 			*y = n - 1 - *y;
 		}
 		//Swap x and y
-		citerator_index_t t = *x;
+		excit_index_t t = *x;
 
 		*x = *y;
 		*y = t;
@@ -1192,10 +1192,10 @@ static void rot(citerator_index_t n, citerator_index_t *x,
 }
 
 //convert (x,y) to d
-static citerator_index_t xy2d(citerator_index_t n, citerator_index_t x,
-			      citerator_index_t y)
+static excit_index_t xy2d(excit_index_t n, excit_index_t x,
+			      excit_index_t y)
 {
-	citerator_index_t rx, ry, s, d = 0;
+	excit_index_t rx, ry, s, d = 0;
 
 	for (s = n / 2; s > 0; s /= 2) {
 		rx = (x & s) > 0;
@@ -1207,10 +1207,10 @@ static citerator_index_t xy2d(citerator_index_t n, citerator_index_t x,
 }
 
 //convert d to (x,y)
-static void d2xy(citerator_index_t n, citerator_index_t d,
-		 citerator_index_t *x, citerator_index_t *y)
+static void d2xy(excit_index_t n, excit_index_t d,
+		 excit_index_t *x, excit_index_t *y)
 {
-	citerator_index_t rx, ry, s, t = d;
+	excit_index_t rx, ry, s, t = d;
 
 	*x = *y = 0;
 	for (s = 1; s < n; s *= 2) {
@@ -1225,7 +1225,7 @@ static void d2xy(citerator_index_t n, citerator_index_t d,
 
 /* End helper functions */
 
-static int hilbert2d_iterator_alloc(citerator_t data)
+static int hilbert2d_iterator_alloc(excit_t data)
 {
 	data->data = malloc(sizeof(struct hilbert2d_iterator_s));
 	if (!data->data)
@@ -1238,22 +1238,22 @@ static int hilbert2d_iterator_alloc(citerator_t data)
 	return 0;
 }
 
-static void hilbert2d_iterator_free(citerator_t data)
+static void hilbert2d_iterator_free(excit_t data)
 {
 	struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
 
-	citerator_free(iterator->range_iterator);
+	excit_free(iterator->range_iterator);
 	free(data->data);
 }
 
-static int hilbert2d_iterator_copy(citerator_t ddst, const citerator_t dsrc)
+static int hilbert2d_iterator_copy(excit_t ddst, const excit_t dsrc)
 {
 	struct hilbert2d_iterator_s *dst =
 	    (struct hilbert2d_iterator_s *) ddst->data;
 	const struct hilbert2d_iterator_s *src =
 	    (const struct hilbert2d_iterator_s *)dsrc->data;
-	citerator_t copy = citerator_dup(src->range_iterator);
+	excit_t copy = excit_dup(src->range_iterator);
 
 	if (!copy)
 		return -EINVAL;
@@ -1262,23 +1262,23 @@ static int hilbert2d_iterator_copy(citerator_t ddst, const citerator_t dsrc)
 	return 0;
 }
 
-static int hilbert2d_iterator_rewind(citerator_t data)
+static int hilbert2d_iterator_rewind(excit_t data)
 {
 	struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
 
-	return citerator_rewind(iterator->range_iterator);
+	return excit_rewind(iterator->range_iterator);
 }
 
-static int hilbert2d_iterator_peek(const citerator_t data,
-				   citerator_index_t *val)
+static int hilbert2d_iterator_peek(const excit_t data,
+				   excit_index_t *val)
 {
 	struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
-	citerator_index_t d;
+	excit_index_t d;
 	int err;
 
-	err = citerator_peek(iterator->range_iterator, &d);
+	err = excit_peek(iterator->range_iterator, &d);
 	if (err)
 		return err;
 	if (val)
@@ -1286,12 +1286,12 @@ static int hilbert2d_iterator_peek(const citerator_t data,
 	return 0;
 }
 
-static int hilbert2d_iterator_next(citerator_t data, citerator_index_t *val)
+static int hilbert2d_iterator_next(excit_t data, excit_index_t *val)
 {
 	struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
-	citerator_index_t d;
-	int err = citerator_next(iterator->range_iterator, &d);
+	excit_index_t d;
+	int err = excit_next(iterator->range_iterator, &d);
 
 	if (err)
 		return err;
@@ -1300,21 +1300,21 @@ static int hilbert2d_iterator_next(citerator_t data, citerator_index_t *val)
 	return 0;
 }
 
-static int hilbert2d_iterator_size(const citerator_t data,
-				   citerator_index_t *size)
+static int hilbert2d_iterator_size(const excit_t data,
+				   excit_index_t *size)
 {
 	const struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
-	return citerator_size(iterator->range_iterator, size);
+	return excit_size(iterator->range_iterator, size);
 }
 
-static int hilbert2d_iterator_nth(const citerator_t data, citerator_index_t n,
-				  citerator_index_t *val)
+static int hilbert2d_iterator_nth(const excit_t data, excit_index_t n,
+				  excit_index_t *val)
 {
-	citerator_index_t d;
+	excit_index_t d;
 	struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
-	int err = citerator_nth(iterator->range_iterator, n, &d);
+	int err = excit_nth(iterator->range_iterator, n, &d);
 
 	if (err)
 		return err;
@@ -1323,9 +1323,9 @@ static int hilbert2d_iterator_nth(const citerator_t data, citerator_index_t n,
 	return 0;
 }
 
-static int hilbert2d_iterator_n(const citerator_t data,
-				const citerator_index_t *indexes,
-				citerator_index_t *n)
+static int hilbert2d_iterator_n(const excit_t data,
+				const excit_index_t *indexes,
+				excit_index_t *n)
 {
 	struct hilbert2d_iterator_s *it =
 	    (struct hilbert2d_iterator_s *) data->data;
@@ -1333,37 +1333,37 @@ static int hilbert2d_iterator_n(const citerator_t data,
 	if (indexes[0] < 0 || indexes[0] >= it->n || indexes[1] < 0
 	    || indexes[1] >= it->n)
 		return -EINVAL;
-	citerator_index_t d = xy2d(it->n, indexes[0], indexes[1]);
+	excit_index_t d = xy2d(it->n, indexes[0], indexes[1]);
 
-	return citerator_n(it->range_iterator, &d, n);
+	return excit_n(it->range_iterator, &d, n);
 }
 
-static int hilbert2d_iterator_pos(const citerator_t data, citerator_index_t *n)
+static int hilbert2d_iterator_pos(const excit_t data, excit_index_t *n)
 {
 	struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
 
-	return citerator_pos(iterator->range_iterator, n);
+	return excit_pos(iterator->range_iterator, n);
 }
 
-static int hilbert2d_iterator_split(const citerator_t data, citerator_index_t n,
-				    citerator_t *results)
+static int hilbert2d_iterator_split(const excit_t data, excit_index_t n,
+				    excit_t *results)
 {
 	const struct hilbert2d_iterator_s *iterator =
 	    (struct hilbert2d_iterator_s *) data->data;
-	int err = citerator_split(iterator->range_iterator, n, results);
+	int err = excit_split(iterator->range_iterator, n, results);
 
 	if (err)
 		return err;
 	if (!results)
 		return 0;
 	for (int i = 0; i < n; i++) {
-		citerator_t tmp;
+		excit_t tmp;
 
 		tmp = results[i];
-		results[i] = citerator_alloc(CITERATOR_HILBERT2D);
+		results[i] = excit_alloc(EXCIT_HILBERT2D);
 		if (!results[i]) {
-			citerator_free(tmp);
+			excit_free(tmp);
 			err = -ENOMEM;
 			goto error;
 		}
@@ -1376,24 +1376,24 @@ static int hilbert2d_iterator_split(const citerator_t data, citerator_index_t n,
 	return 0;
 error:
 	for (int i = 0; i < n; i++)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 	return err;
 }
 
-int citerator_hilbert2d_init(citerator_t iterator, citerator_index_t order)
+int excit_hilbert2d_init(excit_t iterator, excit_index_t order)
 {
 	struct hilbert2d_iterator_s *hilbert2d_iterator;
 
-	if (!iterator || iterator->type != CITERATOR_HILBERT2D || order <= 0)
+	if (!iterator || iterator->type != EXCIT_HILBERT2D || order <= 0)
 		return -EINVAL;
 	iterator->dimension = 2;
 	hilbert2d_iterator = (struct hilbert2d_iterator_s *) iterator->data;
-	hilbert2d_iterator->range_iterator = citerator_alloc(CITERATOR_RANGE);
+	hilbert2d_iterator->range_iterator = excit_alloc(EXCIT_RANGE);
 	if (!hilbert2d_iterator->range_iterator)
 		return -ENOMEM;
 	int n = 1 << order;
 	int err =
-	    citerator_range_init(hilbert2d_iterator->range_iterator, 0,
+	    excit_range_init(hilbert2d_iterator->range_iterator, 0,
 				 n * n - 1, 1);
 
 	if (err)
@@ -1402,7 +1402,7 @@ int citerator_hilbert2d_init(citerator_t iterator, citerator_index_t order)
 	return 0;
 }
 
-static const struct citerator_func_table_s citerator_hilbert2d_func_table = {
+static const struct excit_func_table_s excit_hilbert2d_func_table = {
 	hilbert2d_iterator_alloc,
 	hilbert2d_iterator_free,
 	hilbert2d_iterator_copy,
@@ -1419,13 +1419,13 @@ static const struct citerator_func_table_s citerator_hilbert2d_func_table = {
 /*--------------------------------------------------------------------*/
 
 struct range_iterator_s {
-	citerator_index_t v;
-	citerator_index_t first;
-	citerator_index_t last;
-	citerator_index_t step;
+	excit_index_t v;
+	excit_index_t first;
+	excit_index_t last;
+	excit_index_t step;
 };
 
-static int range_iterator_alloc(citerator_t data)
+static int range_iterator_alloc(excit_t data)
 {
 	data->data = malloc(sizeof(struct range_iterator_s));
 	if (!data->data)
@@ -1440,12 +1440,12 @@ static int range_iterator_alloc(citerator_t data)
 	return 0;
 }
 
-static void range_iterator_free(citerator_t data)
+static void range_iterator_free(excit_t data)
 {
 	free(data->data);
 }
 
-static int range_iterator_copy(citerator_t ddst, const citerator_t dsrc)
+static int range_iterator_copy(excit_t ddst, const excit_t dsrc)
 {
 	struct range_iterator_s *dst = (struct range_iterator_s *) ddst->data;
 	const struct range_iterator_s *src =
@@ -1458,7 +1458,7 @@ static int range_iterator_copy(citerator_t ddst, const citerator_t dsrc)
 	return 0;
 }
 
-static int range_iterator_rewind(citerator_t data)
+static int range_iterator_rewind(excit_t data)
 {
 	struct range_iterator_s *iterator =
 	    (struct range_iterator_s *) data->data;
@@ -1467,7 +1467,7 @@ static int range_iterator_rewind(citerator_t data)
 	return 0;
 }
 
-static int range_iterator_peek(const citerator_t data, citerator_index_t *val)
+static int range_iterator_peek(const excit_t data, excit_index_t *val)
 {
 	struct range_iterator_s *iterator =
 	    (struct range_iterator_s *) data->data;
@@ -1485,7 +1485,7 @@ static int range_iterator_peek(const citerator_t data, citerator_index_t *val)
 	return 0;
 }
 
-static int range_iterator_next(citerator_t data, citerator_index_t *val)
+static int range_iterator_next(excit_t data, excit_index_t *val)
 {
 	struct range_iterator_s *iterator =
 	    (struct range_iterator_s *) data->data;
@@ -1497,7 +1497,7 @@ static int range_iterator_next(citerator_t data, citerator_index_t *val)
 	return 0;
 }
 
-static int range_iterator_size(const citerator_t data, citerator_index_t *size)
+static int range_iterator_size(const excit_t data, excit_index_t *size)
 {
 	const struct range_iterator_s *it =
 	    (struct range_iterator_s *) data->data;
@@ -1517,10 +1517,10 @@ static int range_iterator_size(const citerator_t data, citerator_index_t *size)
 	return 0;
 }
 
-static int range_iterator_nth(const citerator_t data, citerator_index_t n,
-			      citerator_index_t *val)
+static int range_iterator_nth(const excit_t data, excit_index_t n,
+			      excit_index_t *val)
 {
-	int size;
+	excit_index_t size;
 	int err = range_iterator_size(data, &size);
 
 	if (err)
@@ -1535,18 +1535,18 @@ static int range_iterator_nth(const citerator_t data, citerator_index_t n,
 	return 0;
 }
 
-static int range_iterator_n(const citerator_t data,
-			    const citerator_index_t *val,
-			    citerator_index_t *n)
+static int range_iterator_n(const excit_t data,
+			    const excit_index_t *val,
+			    excit_index_t *n)
 {
-	int size;
+	excit_index_t size;
 	int err = range_iterator_size(data, &size);
 
 	if (err)
 		return err;
 	const struct range_iterator_s *it =
 	    (struct range_iterator_s *) data->data;
-	citerator_index_t pos = (*val - it->first) / it->step;
+	excit_index_t pos = (*val - it->first) / it->step;
 
 	if (pos < 0 || pos >= size || it->first + pos * it->step != *val)
 		return -EINVAL;
@@ -1555,9 +1555,9 @@ static int range_iterator_n(const citerator_t data,
 	return 0;
 }
 
-static int range_iterator_pos(const citerator_t data, citerator_index_t *n)
+static int range_iterator_pos(const excit_t data, excit_index_t *n)
 {
-	citerator_index_t val;
+	excit_index_t val;
 	int err = range_iterator_peek(data, &val);
 
 	if (err)
@@ -1570,12 +1570,12 @@ static int range_iterator_pos(const citerator_t data, citerator_index_t *n)
 	return 0;
 }
 
-static int range_iterator_split(const citerator_t data, citerator_index_t n,
-				citerator_t *results)
+static int range_iterator_split(const excit_t data, excit_index_t n,
+				excit_t *results)
 {
 	const struct range_iterator_s *iterator =
 	    (struct range_iterator_s *) data->data;
-	citerator_index_t size;
+	excit_index_t size;
 	int err = range_iterator_size(data, &size);
 
 	if (err)
@@ -1586,23 +1586,23 @@ static int range_iterator_split(const citerator_t data, citerator_index_t n,
 		return -EDOM;
 	if (!results)
 		return 0;
-	citerator_index_t new_last = iterator->last;
-	citerator_index_t new_first;
+	excit_index_t new_last = iterator->last;
+	excit_index_t new_first;
 	int i;
 
 	for (i = n - 1; i >= 0; i--) {
 		block_size = size / (i + 1);
-		results[i] = citerator_alloc(CITERATOR_RANGE);
+		results[i] = excit_alloc(EXCIT_RANGE);
 		if (!results[i]) {
 			err = -ENOMEM;
 			goto error;
 		}
 		new_first = new_last - (block_size - 1) * iterator->step;
 		err =
-		    citerator_range_init(results[i], new_first, new_last,
+		    excit_range_init(results[i], new_first, new_last,
 					 iterator->step);
 		if (err) {
-			citerator_free(results[i]);
+			excit_free(results[i]);
 			goto error;
 		}
 		new_last = new_first - iterator->step;
@@ -1612,16 +1612,16 @@ static int range_iterator_split(const citerator_t data, citerator_index_t n,
 error:
 	i += 1;
 	for (; i < n; i++)
-		citerator_free(results[i]);
+		excit_free(results[i]);
 	return err;
 }
 
-int citerator_range_init(citerator_t iterator, citerator_index_t first,
-			 citerator_index_t last, citerator_index_t step)
+int excit_range_init(excit_t iterator, excit_index_t first,
+			 excit_index_t last, excit_index_t step)
 {
 	struct range_iterator_s *range_iterator;
 
-	if (!iterator || iterator->type != CITERATOR_RANGE)
+	if (!iterator || iterator->type != EXCIT_RANGE)
 		return -EINVAL;
 	iterator->dimension = 1;
 	range_iterator = (struct range_iterator_s *) iterator->data;
@@ -1632,7 +1632,7 @@ int citerator_range_init(citerator_t iterator, citerator_index_t first,
 	return 0;
 }
 
-static const struct citerator_func_table_s citerator_range_func_table = {
+static const struct excit_func_table_s excit_range_func_table = {
 	range_iterator_alloc,
 	range_iterator_free,
 	range_iterator_copy,
@@ -1648,7 +1648,7 @@ static const struct citerator_func_table_s citerator_range_func_table = {
 
 /*--------------------------------------------------------------------*/
 
-#define ALLOC_CITERATOR(it, func_table) {\
+#define ALLOC_EXCIT(it, func_table) {\
 	if (!func_table.alloc)\
 		goto error;\
 	it->functions = &func_table;\
@@ -1657,31 +1657,31 @@ static const struct citerator_func_table_s citerator_range_func_table = {
 		goto error;\
 }
 
-citerator_t citerator_alloc(enum citerator_type_e type)
+excit_t excit_alloc(enum excit_type_e type)
 {
-	citerator_t iterator;
+	excit_t iterator;
 
-	iterator = malloc(sizeof(const struct citerator_s));
+	iterator = malloc(sizeof(const struct excit_s));
 	if (!iterator)
 		return NULL;
 	switch (type) {
-	case CITERATOR_RANGE:
-		ALLOC_CITERATOR(iterator, citerator_range_func_table);
+	case EXCIT_RANGE:
+		ALLOC_EXCIT(iterator, excit_range_func_table);
 		break;
-	case CITERATOR_CONS:
-		ALLOC_CITERATOR(iterator, citerator_cons_func_table);
+	case EXCIT_CONS:
+		ALLOC_EXCIT(iterator, excit_cons_func_table);
 		break;
-	case CITERATOR_REPEAT:
-		ALLOC_CITERATOR(iterator, citerator_repeat_func_table);
+	case EXCIT_REPEAT:
+		ALLOC_EXCIT(iterator, excit_repeat_func_table);
 		break;
-	case CITERATOR_HILBERT2D:
-		ALLOC_CITERATOR(iterator, citerator_hilbert2d_func_table);
+	case EXCIT_HILBERT2D:
+		ALLOC_EXCIT(iterator, excit_hilbert2d_func_table);
 		break;
-	case CITERATOR_PRODUCT:
-		ALLOC_CITERATOR(iterator, citerator_product_func_table);
+	case EXCIT_PRODUCT:
+		ALLOC_EXCIT(iterator, excit_product_func_table);
 		break;
-	case CITERATOR_SLICE:
-		ALLOC_CITERATOR(iterator, citerator_slice_func_table);
+	case EXCIT_SLICE:
+		ALLOC_EXCIT(iterator, excit_slice_func_table);
 		break;
 	default:
 		goto error;
@@ -1693,14 +1693,14 @@ error:
 	return NULL;
 }
 
-citerator_t citerator_dup(citerator_t iterator)
+excit_t excit_dup(excit_t iterator)
 {
-	citerator_t result = NULL;
+	excit_t result = NULL;
 
 	if (!iterator || !iterator->data || !iterator->functions
 	    || !iterator->functions->copy)
 		return NULL;
-	result = citerator_alloc(iterator->type);
+	result = excit_alloc(iterator->type);
 	if (!result)
 		return NULL;
 	result->dimension = iterator->dimension;
@@ -1708,11 +1708,11 @@ citerator_t citerator_dup(citerator_t iterator)
 		goto error;
 	return result;
 error:
-	citerator_free(result);
+	excit_free(result);
 	return NULL;
 }
 
-void citerator_free(citerator_t iterator)
+void excit_free(excit_t iterator)
 {
 	if (!iterator || !iterator->functions)
 		return;
@@ -1721,7 +1721,7 @@ void citerator_free(citerator_t iterator)
 	free(iterator);
 }
 
-int citerator_dimension(citerator_t iterator, citerator_index_t *dimension)
+int excit_dimension(excit_t iterator, excit_index_t *dimension)
 {
 	if (!iterator || !dimension)
 		return -EINVAL;
@@ -1729,7 +1729,7 @@ int citerator_dimension(citerator_t iterator, citerator_index_t *dimension)
 	return 0;
 }
 
-int citerator_type(citerator_t iterator, enum citerator_type_e *type)
+int excit_type(excit_t iterator, enum excit_type_e *type)
 {
 	if (!iterator || !type)
 		return -EINVAL;
@@ -1737,7 +1737,7 @@ int citerator_type(citerator_t iterator, enum citerator_type_e *type)
 	return 0;
 }
 
-int citerator_next(citerator_t iterator, citerator_index_t *indexes)
+int excit_next(excit_t iterator, excit_index_t *indexes)
 {
 	if (!iterator || !iterator->functions)
 		return -EINVAL;
@@ -1746,7 +1746,7 @@ int citerator_next(citerator_t iterator, citerator_index_t *indexes)
 	return iterator->functions->next(iterator, indexes);
 }
 
-int citerator_peek(const citerator_t iterator, citerator_index_t *indexes)
+int excit_peek(const excit_t iterator, excit_index_t *indexes)
 {
 	if (!iterator || !iterator->functions)
 		return -EINVAL;
@@ -1755,7 +1755,7 @@ int citerator_peek(const citerator_t iterator, citerator_index_t *indexes)
 	return iterator->functions->peek(iterator, indexes);
 }
 
-int citerator_size(const citerator_t iterator, citerator_index_t *size)
+int excit_size(const excit_t iterator, excit_index_t *size)
 {
 	if (!iterator || !iterator->functions || !size)
 		return -EINVAL;
@@ -1764,7 +1764,7 @@ int citerator_size(const citerator_t iterator, citerator_index_t *size)
 	return iterator->functions->size(iterator, size);
 }
 
-int citerator_rewind(citerator_t iterator)
+int excit_rewind(excit_t iterator)
 {
 	if (!iterator || !iterator->functions)
 		return -EINVAL;
@@ -1773,8 +1773,8 @@ int citerator_rewind(citerator_t iterator)
 	return iterator->functions->rewind(iterator);
 }
 
-int citerator_split(const citerator_t iterator, citerator_index_t n,
-		    citerator_t *results)
+int excit_split(const excit_t iterator, excit_index_t n,
+		    excit_t *results)
 {
 	if (!iterator || !iterator->functions)
 		return -EINVAL;
@@ -1785,8 +1785,8 @@ int citerator_split(const citerator_t iterator, citerator_index_t n,
 	return iterator->functions->split(iterator, n, results);
 }
 
-int citerator_nth(const citerator_t iterator, citerator_index_t n,
-		  citerator_index_t *indexes)
+int excit_nth(const excit_t iterator, excit_index_t n,
+		  excit_index_t *indexes)
 {
 	if (!iterator || !iterator->functions)
 		return -EINVAL;
@@ -1795,8 +1795,8 @@ int citerator_nth(const citerator_t iterator, citerator_index_t n,
 	return iterator->functions->nth(iterator, n, indexes);
 }
 
-int citerator_n(const citerator_t iterator, const citerator_index_t *indexes,
-		citerator_index_t *n)
+int excit_n(const excit_t iterator, const excit_index_t *indexes,
+		excit_index_t *n)
 {
 	if (!iterator || !iterator->functions || !indexes)
 		return -EINVAL;
@@ -1805,7 +1805,7 @@ int citerator_n(const citerator_t iterator, const citerator_index_t *indexes,
 	return iterator->functions->n(iterator, indexes, n);
 }
 
-int citerator_pos(const citerator_t iterator, citerator_index_t *n)
+int excit_pos(const excit_t iterator, excit_index_t *n)
 {
 	if (!iterator || !iterator->functions)
 		return -EINVAL;
@@ -1814,7 +1814,7 @@ int citerator_pos(const citerator_t iterator, citerator_index_t *n)
 	return iterator->functions->pos(iterator, n);
 }
 
-int citerator_cyclic_next(citerator_t iterator, citerator_index_t *indexes,
+int excit_cyclic_next(excit_t iterator, excit_index_t *indexes,
 			  int *looped)
 {
 	int err;
@@ -1822,24 +1822,24 @@ int citerator_cyclic_next(citerator_t iterator, citerator_index_t *indexes,
 	if (!iterator)
 		return -EINVAL;
 	*looped = 0;
-	err = citerator_next(iterator, indexes);
+	err = excit_next(iterator, indexes);
 	switch (err) {
 	case 0:
 		break;
 	case -ERANGE:
-		err = citerator_rewind(iterator);
+		err = excit_rewind(iterator);
 		if (err)
 			return err;
 		*looped = 1;
-		err = citerator_next(iterator, indexes);
+		err = excit_next(iterator, indexes);
 		if (err)
 			return err;
 		break;
 	default:
 		return err;
 	}
-	if (citerator_peek(iterator, NULL) == -ERANGE) {
-		err = citerator_rewind(iterator);
+	if (excit_peek(iterator, NULL) == -ERANGE) {
+		err = excit_rewind(iterator);
 		if (err)
 			return err;
 		*looped = 1;
@@ -1847,7 +1847,7 @@ int citerator_cyclic_next(citerator_t iterator, citerator_index_t *indexes,
 	return 0;
 }
 
-int citerator_skip(citerator_t iterator)
+int excit_skip(excit_t iterator)
 {
-	return citerator_next(iterator, NULL);
+	return excit_next(iterator, NULL);
 }

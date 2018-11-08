@@ -2,7 +2,7 @@
 AC_INIT([excit],[0.0.1],[brice.videau@imag.fr])
 
 # are we in the right source dir ?
-AC_CONFIG_SRCDIR([src/citerators.h])
+AC_CONFIG_SRCDIR([src/excit.h])
 
 # build artefacts in separate dir
 AC_CONFIG_AUX_DIR([m4])

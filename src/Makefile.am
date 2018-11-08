@@ -1,6 +1,6 @@
 
 lib_LTLIBRARIES = libexcit.la
 
-libexcit_la_SOURCES = citerators.c citerators.h
+libexcit_la_SOURCES = excit.c excit.h
 
-include_HEADERS = citerators.h
+include_HEADERS = excit.h
