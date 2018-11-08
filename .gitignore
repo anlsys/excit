@@ -1,0 +1,64 @@
+# ignore all
+*
+
+# unignore files with extensions
+!*.*
+
+# unignore all dirs
+!*/
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.so
+*.so.*
+
+# automake
+Makefile.in
+Makefile
+
+# autoconf
+/m4
+/autom4te.cache
+/autoscan.log
+/autoscan-*.log
+/aclocal.m4
+/compile
+config.guess
+config.h
+config.h.in
+config.sub
+config.log
+config.status
+stamp-h1
+/configure
+/configure.scan
+/depcomp
+/install-sh
+/missing
+/stamp-h1
+
+# autotest
+tests/*.trs
+tests/*.log
+*.test.*
+
+# libtool
+/libtool
+/ltmain.sh
+.deps
+.libs
+
+# editors
+*~
+*.sw*
