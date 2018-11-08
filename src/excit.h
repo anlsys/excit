@@ -10,6 +10,15 @@ enum excit_type_e {
 	EXCIT_SLICE
 };
 
+enum excit_error_e {
+	EXCIT_SUCCESS,
+	EXCIT_STOPIT,
+	EXCIT_ENOMEM,
+	EXCIT_EINVAL,
+	EXCIT_EDOM,
+	EXCIT_ENOTSUP
+};
+
 typedef struct excit_s *excit_t;
 
 typedef ssize_t excit_index_t;
