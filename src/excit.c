@@ -1,6 +1,41 @@
 #include <stdlib.h>
 #include <excit.h>
 
+#define CASE(val) case val: return #val; break;
+
+const char * excit_type_name(enum excit_type_e type)
+{
+	switch(type) {
+		CASE(EXCIT_RANGE)
+		CASE(EXCIT_CONS)
+		CASE(EXCIT_REPEAT)
+		CASE(EXCIT_HILBERT2D)
+		CASE(EXCIT_PRODUCT)
+		CASE(EXCIT_SLICE)
+		CASE(EXCIT_USER)
+		CASE(EXCIT_TYPE_MAX)
+	default:
+		return NULL;
+	}
+}
+
+const char * excit_error_name(enum excit_error_e err)
+{
+	switch(err) {
+		CASE(EXCIT_SUCCESS)
+		CASE(EXCIT_STOPIT)
+		CASE(EXCIT_ENOMEM)
+		CASE(EXCIT_EINVAL)
+		CASE(EXCIT_EDOM)
+		CASE(EXCIT_ENOTSUP)
+		CASE(EXCIT_ERROR_MAX)
+	default:
+		return NULL;
+	}
+}
+
+#undef CASE
+
 /*--------------------------------------------------------------------*/
 
 struct slice_it_s {

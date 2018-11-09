@@ -12,6 +12,8 @@ enum excit_type_e {
 	EXCIT_TYPE_MAX
 };
 
+const char * excit_type_name(enum excit_type_e type);
+
 enum excit_error_e {
 	EXCIT_SUCCESS,
 	EXCIT_STOPIT,
@@ -21,6 +23,8 @@ enum excit_error_e {
 	EXCIT_ENOTSUP,
 	EXCIT_ERROR_MAX
 };
+
+const char * excit_error_name(enum excit_error_e err);
 
 struct excit_s {
 	const struct excit_func_table_s *functions;
