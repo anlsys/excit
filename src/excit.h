@@ -45,7 +45,7 @@ struct excit_func_table_s {
 	int (*rewind)(excit_t it);
 	int (*split)(const excit_t it, ssize_t n, excit_t *results);
 	int (*nth)(const excit_t it, ssize_t n, ssize_t *indexes);
-	int (*n)(const excit_t it, const ssize_t *indexes, ssize_t *n);
+	int (*rank)(const excit_t it, const ssize_t *indexes, ssize_t *n);
 	int (*pos)(const excit_t it, ssize_t *n);
 };
 
@@ -64,9 +64,9 @@ int excit_size(const excit_t it, ssize_t *size);
 int excit_rewind(excit_t it);
 int excit_split(const excit_t it, ssize_t n, excit_t *results);
 int excit_nth(const excit_t it, ssize_t n, ssize_t *indexes);
-int excit_n(const excit_t it, const ssize_t *indexes, ssize_t *n);
 int excit_pos(const excit_t it, ssize_t *n);
 
+int excit_rank(const excit_t it, const ssize_t *indexes, ssize_t *rank);
 int excit_skip(excit_t it);
 int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped);
 

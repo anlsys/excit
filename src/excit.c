@@ -166,15 +166,15 @@ static int slice_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 	return excit_nth(it->src, p, indexes);
 }
 
-static int slice_it_n(const excit_t data, const ssize_t *indexes, ssize_t *n)
+static int slice_it_rank(const excit_t data, const ssize_t *indexes, ssize_t *n)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 	ssize_t inner_n;
-	int err = excit_n(it->src, indexes, &inner_n);
+	int err = excit_rank(it->src, indexes, &inner_n);
 
 	if (err)
 		return err;
-	return excit_n(it->indexer, &inner_n, n);
+	return excit_rank(it->indexer, &inner_n, n);
 }
 
 static int slice_it_pos(const excit_t data, ssize_t *n)
@@ -234,7 +234,7 @@ static struct excit_func_table_s excit_slice_func_table = {
 	slice_it_rewind,
 	slice_it_split,
 	slice_it_nth,
-	slice_it_n,
+	slice_it_rank,
 	slice_it_pos
 };
 
@@ -383,7 +383,7 @@ static int prod_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int prod_it_n(const excit_t data, const ssize_t *indexes, ssize_t *n)
+static int prod_it_rank(const excit_t data, const ssize_t *indexes, ssize_t *n)
 {
 	const struct prod_it_s *it = (const struct prod_it_s *) data->data;
 
@@ -395,7 +395,7 @@ static int prod_it_n(const excit_t data, const ssize_t *indexes, ssize_t *n)
 	ssize_t subsize;
 
 	for (ssize_t i = 0; i < it->count; i++) {
-		int err = excit_n(it->its[i], indexes + offset, &inner_n);
+		int err = excit_rank(it->its[i], indexes + offset, &inner_n);
 		if (err)
 			return err;
 		err = excit_size(it->its[i], &subsize);
@@ -631,7 +631,7 @@ static struct excit_func_table_s excit_prod_func_table = {
 	prod_it_rewind,
 	prod_it_split,
 	prod_it_nth,
-	prod_it_n,
+	prod_it_rank,
 	prod_it_pos
 };
 
@@ -807,18 +807,18 @@ static int cons_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_n(const excit_t data, const ssize_t *indexes, ssize_t *n)
+static int cons_it_rank(const excit_t data, const ssize_t *indexes, ssize_t *n)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *) data->data;
 	ssize_t inner_n, inner_n_tmp;
-	int err = excit_n(it->it, indexes, &inner_n);
+	int err = excit_rank(it->it, indexes, &inner_n);
 
 	if (err)
 		return err;
 	int dim = it->it->dimension;
 
 	for (int i = 1; i < it->n; i++) {
-		err = excit_n(it->it, indexes + dim * i, &inner_n_tmp);
+		err = excit_rank(it->it, indexes + dim * i, &inner_n_tmp);
 		if (err)
 			return err;
 		if (inner_n_tmp != inner_n + 1)
@@ -946,7 +946,7 @@ static struct excit_func_table_s excit_cons_func_table = {
 	cons_it_rewind,
 	cons_it_split,
 	cons_it_nth,
-	cons_it_n,
+	cons_it_rank,
 	cons_it_pos
 };
 
@@ -1250,8 +1250,8 @@ static int hilbert2d_it_nth(const excit_t data, ssize_t n, ssize_t *val)
 	return EXCIT_SUCCESS;
 }
 
-static int hilbert2d_it_n(const excit_t data, const ssize_t *indexes,
-			  ssize_t *n)
+static int hilbert2d_it_rank(const excit_t data, const ssize_t *indexes,
+			     ssize_t *n)
 {
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *) data->data;
 
@@ -1260,7 +1260,7 @@ static int hilbert2d_it_n(const excit_t data, const ssize_t *indexes,
 		return -EXCIT_EINVAL;
 	ssize_t d = xy2d(it->n, indexes[0], indexes[1]);
 
-	return excit_n(it->range_it, &d, n);
+	return excit_rank(it->range_it, &d, n);
 }
 
 static int hilbert2d_it_pos(const excit_t data, ssize_t *n)
@@ -1332,7 +1332,7 @@ static struct excit_func_table_s excit_hilbert2d_func_table = {
 	hilbert2d_it_rewind,
 	hilbert2d_it_split,
 	hilbert2d_it_nth,
-	hilbert2d_it_n,
+	hilbert2d_it_rank,
 	hilbert2d_it_pos
 };
 
@@ -1443,7 +1443,7 @@ static int range_it_nth(const excit_t data, ssize_t n, ssize_t *val)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_n(const excit_t data, const ssize_t *val, ssize_t *n)
+static int range_it_rank(const excit_t data, const ssize_t *val, ssize_t *n)
 {
 	ssize_t size;
 	int err = range_it_size(data, &size);
@@ -1542,7 +1542,7 @@ static struct excit_func_table_s excit_range_func_table = {
 	range_it_rewind,
 	range_it_split,
 	range_it_nth,
-	range_it_n,
+	range_it_rank,
 	range_it_pos
 };
 
@@ -1721,13 +1721,13 @@ int excit_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 	return it->func_table->nth(it, n, indexes);
 }
 
-int excit_n(const excit_t it, const ssize_t *indexes, ssize_t *n)
+int excit_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 {
 	if (!it || !it->func_table || !indexes)
 		return -EXCIT_EINVAL;
-	if (!it->func_table->n)
+	if (!it->func_table->rank)
 		return -EXCIT_ENOTSUP;
-	return it->func_table->n(it, indexes, n);
+	return it->func_table->rank(it, indexes, n);
 }
 
 int excit_pos(const excit_t it, ssize_t *n)

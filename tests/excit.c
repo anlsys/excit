@@ -33,7 +33,7 @@ void test_range_iterator(void)
 	for (i = 0; i < 4; i++) {
 		assert(excit_nth(it, i, indexes) == ES);
 		assert(indexes[0] == i);
-		assert(excit_n(it, indexes, &ith) == ES);
+		assert(excit_rank(it, indexes, &ith) == ES);
 		assert(ith == i);
 		ith = -1;
 		assert(excit_pos(it, &ith) == ES);
@@ -177,7 +177,7 @@ void test_product_iterators(void)
 			assert(excit_pos(it, &ith) == ES);
 			assert(ith == k);
 			ith = -1;
-			assert(excit_n(it, indexes, &ith) == ES);
+			assert(excit_rank(it, indexes, &ith) == ES);
 			assert(ith == k);
 			assert(excit_peek(it, indexes) == ES);
 			assert(indexes[0] == i);
@@ -433,7 +433,7 @@ void test_cons_iterator(void)
 			assert(excit_pos(it, &ith) == ES);
 			assert(ith == k);
 			ith = -1;
-			assert(excit_n(it, indexes, &ith) == ES);
+			assert(excit_rank(it, indexes, &ith) == ES);
 			assert(ith == k);
 			assert(excit_peek(it, indexes) == ES);
 			assert(indexes[0] == i);
@@ -633,7 +633,7 @@ void test_hilbert2d_iterator(void)
 		assert(excit_nth(it, j, indexes2) == ES);
 		assert(indexes[0] == indexes2[0]);
 		assert(indexes[1] == indexes2[1]);
-		assert(excit_n(it, indexes, &ith) == ES);
+		assert(excit_rank(it, indexes, &ith) == ES);
 		assert(j == ith);
 		j++;
 	}
