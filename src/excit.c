@@ -5,7 +5,7 @@
 
 const char * excit_type_name(enum excit_type_e type)
 {
-	switch(type) {
+	switch (type) {
 		CASE(EXCIT_RANGE)
 		CASE(EXCIT_CONS)
 		CASE(EXCIT_REPEAT)
@@ -21,7 +21,7 @@ const char * excit_type_name(enum excit_type_e type)
 
 const char * excit_error_name(enum excit_error_e err)
 {
-	switch(err) {
+	switch (err) {
 		CASE(EXCIT_SUCCESS)
 		CASE(EXCIT_STOPIT)
 		CASE(EXCIT_ENOMEM)
@@ -36,6 +36,49 @@ const char * excit_error_name(enum excit_error_e err)
 
 #undef CASE
 
+struct excit_s {
+	struct excit_func_table_s *func_table;
+	ssize_t dimension;
+	enum excit_type_e type;
+	void *data;
+};
+
+int excit_set_dimension(excit_t it, ssize_t dimension)
+{
+	if (!it)
+		return -EXCIT_EINVAL;
+	if (it->type != EXCIT_USER)
+		return -EXCIT_ENOTSUP;
+	it->dimension = dimension;
+	return EXCIT_SUCCESS;
+}
+
+int excit_get_data(excit_t it, void **data)
+{
+	if (!it)
+		return -EXCIT_EINVAL;
+	if (it->type != EXCIT_USER)
+		return -EXCIT_ENOTSUP;
+	*data = it->data;
+	return EXCIT_SUCCESS;
+}
+
+int excit_set_func_table(excit_t it, struct excit_func_table_s *func_table)
+{
+	if (!it)
+		return -EXCIT_EINVAL;
+	it->func_table = func_table;
+	return EXCIT_SUCCESS;
+}
+
+int excit_get_func_table(excit_t it, struct excit_func_table_s **func_table)
+{
+	if (!it)
+		return -EXCIT_EINVAL;
+	*func_table = it->func_table;
+	return EXCIT_SUCCESS;
+}
+
 /*--------------------------------------------------------------------*/
 
 struct slice_it_s {
@@ -45,9 +88,6 @@ struct slice_it_s {
 
 static int slice_it_alloc(excit_t data)
 {
-	data->data = malloc(sizeof(struct slice_it_s));
-	if (!data->data)
-		return -EXCIT_ENOMEM;
 	struct slice_it_s *it = (struct slice_it_s *) data->data;
 
 	it->src = NULL;
@@ -61,7 +101,6 @@ static void slice_it_free(excit_t data)
 
 	excit_free(it->src);
 	excit_free(it->indexer);
-	free(data->data);
 }
 
 static int slice_it_copy(excit_t dst, const excit_t src)
@@ -185,7 +224,7 @@ error:
 	return err;
 }
 
-static const struct excit_func_table_s excit_slice_func_table = {
+static struct excit_func_table_s excit_slice_func_table = {
 	slice_it_alloc,
 	slice_it_free,
 	slice_it_copy,
@@ -231,9 +270,6 @@ struct prod_it_s {
 
 static int prod_it_alloc(excit_t data)
 {
-	data->data = malloc(sizeof(struct prod_it_s));
-	if (!data->data)
-		return -EXCIT_ENOMEM;
 	struct prod_it_s *it = (struct prod_it_s *) data->data;
 
 	it->count = 0;
@@ -244,12 +280,12 @@ static int prod_it_alloc(excit_t data)
 static void prod_it_free(excit_t data)
 {
 	struct prod_it_s *it = (struct prod_it_s *) data->data;
+
 	if (it->its) {
 		for (ssize_t i = 0; i < it->count; i++)
 			excit_free(it->its[i]);
 		free(it->its);
 	}
-	free(data->data);
 }
 
 static int prod_it_copy(excit_t dst, const excit_t src)
@@ -585,7 +621,7 @@ int excit_product_add(excit_t it, excit_t added_it)
 	return EXCIT_SUCCESS;
 }
 
-static const struct excit_func_table_s excit_product_func_table = {
+static struct excit_func_table_s excit_prod_func_table = {
 	prod_it_alloc,
 	prod_it_free,
 	prod_it_copy,
@@ -641,9 +677,6 @@ struct cons_it_s {
 
 static int cons_it_alloc(excit_t data)
 {
-	data->data = malloc(sizeof(struct cons_it_s));
-	if (!data->data)
-		return -EXCIT_ENOMEM;
 	struct cons_it_s *it = (struct cons_it_s *) data->data;
 
 	it->it = NULL;
@@ -662,7 +695,6 @@ static void cons_it_free(excit_t data)
 
 	excit_free(it->it);
 	free(it->fifo.buffer);
-	free(data->data);
 }
 
 static int cons_it_copy(excit_t ddst, const excit_t dsrc)
@@ -904,7 +936,7 @@ int excit_cons_init(excit_t it, excit_t src, ssize_t n)
 	return EXCIT_SUCCESS;
 }
 
-static const struct excit_func_table_s excit_cons_func_table = {
+static struct excit_func_table_s excit_cons_func_table = {
 	cons_it_alloc,
 	cons_it_free,
 	cons_it_copy,
@@ -928,9 +960,6 @@ struct repeat_it_s {
 
 static int repeat_it_alloc(excit_t data)
 {
-	data->data = malloc(sizeof(struct repeat_it_s));
-	if (!data->data)
-		return -EXCIT_ENOMEM;
 	struct repeat_it_s *it = (struct repeat_it_s *) data->data;
 
 	it->it = NULL;
@@ -944,7 +973,6 @@ static void repeat_it_free(excit_t data)
 	struct repeat_it_s *it = (struct repeat_it_s *) data->data;
 
 	excit_free(it->it);
-	free(data->data);
 }
 
 static int repeat_it_copy(excit_t ddst, const excit_t dsrc)
@@ -1055,7 +1083,7 @@ error:
 	return err;
 }
 
-static const struct excit_func_table_s excit_repeat_func_table = {
+static struct excit_func_table_s excit_repeat_func_table = {
 	repeat_it_alloc,
 	repeat_it_free,
 	repeat_it_copy,
@@ -1141,9 +1169,6 @@ static void d2xy(ssize_t n, ssize_t d, ssize_t *x, ssize_t *y)
 
 static int hilbert2d_it_alloc(excit_t data)
 {
-	data->data = malloc(sizeof(struct hilbert2d_it_s));
-	if (!data->data)
-		return -EXCIT_ENOMEM;
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *) data->data;
 
 	it->n = 0;
@@ -1156,7 +1181,6 @@ static void hilbert2d_it_free(excit_t data)
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *) data->data;
 
 	excit_free(it->range_it);
-	free(data->data);
 }
 
 static int hilbert2d_it_copy(excit_t ddst, const excit_t dsrc)
@@ -1298,7 +1322,7 @@ int excit_hilbert2d_init(excit_t it, ssize_t order)
 	return EXCIT_SUCCESS;
 }
 
-static const struct excit_func_table_s excit_hilbert2d_func_table = {
+static struct excit_func_table_s excit_hilbert2d_func_table = {
 	hilbert2d_it_alloc,
 	hilbert2d_it_free,
 	hilbert2d_it_copy,
@@ -1323,9 +1347,6 @@ struct range_it_s {
 
 static int range_it_alloc(excit_t data)
 {
-	data->data = malloc(sizeof(struct range_it_s));
-	if (!data->data)
-		return -EXCIT_ENOMEM;
 	struct range_it_s *it = (struct range_it_s *) data->data;
 
 	it->v = 0;
@@ -1337,7 +1358,6 @@ static int range_it_alloc(excit_t data)
 
 static void range_it_free(excit_t data)
 {
-	free(data->data);
 }
 
 static int range_it_copy(excit_t ddst, const excit_t dsrc)
@@ -1512,7 +1532,7 @@ int excit_range_init(excit_t it, ssize_t first, ssize_t last, ssize_t step)
 	return EXCIT_SUCCESS;
 }
 
-static const struct excit_func_table_s excit_range_func_table = {
+static struct excit_func_table_s excit_range_func_table = {
 	range_it_alloc,
 	range_it_free,
 	range_it_copy,
@@ -1528,40 +1548,41 @@ static const struct excit_func_table_s excit_range_func_table = {
 
 /*--------------------------------------------------------------------*/
 
-#define ALLOC_EXCIT(it, func_table) {\
-	if (!func_table.alloc)\
-		goto error;\
-	it->functions = &func_table;\
-	it->dimension = 0;\
-	if (func_table.alloc(it))\
-		goto error;\
+#define ALLOC_EXCIT(op) { \
+	it = malloc(sizeof(struct excit_s) + sizeof(struct op## _it_s)); \
+	if (!it) \
+		return NULL; \
+	it->data = (void *)((char *)it + sizeof(struct excit_s)); \
+	if (!excit_ ##op## _func_table.alloc) \
+		goto error; \
+	it->func_table = &excit_ ##op## _func_table; \
+	it->dimension = 0; \
+	if (excit_ ##op## _func_table.alloc(it)) \
+		goto error; \
 }
 
 excit_t excit_alloc(enum excit_type_e type)
 {
-	excit_t it;
+	excit_t it = NULL;
 
-	it = malloc(sizeof(const struct excit_s));
-	if (!it)
-		return NULL;
 	switch (type) {
 	case EXCIT_RANGE:
-		ALLOC_EXCIT(it, excit_range_func_table);
+		ALLOC_EXCIT(range);
 		break;
 	case EXCIT_CONS:
-		ALLOC_EXCIT(it, excit_cons_func_table);
+		ALLOC_EXCIT(cons);
 		break;
 	case EXCIT_REPEAT:
-		ALLOC_EXCIT(it, excit_repeat_func_table);
+		ALLOC_EXCIT(repeat);
 		break;
 	case EXCIT_HILBERT2D:
-		ALLOC_EXCIT(it, excit_hilbert2d_func_table);
+		ALLOC_EXCIT(hilbert2d);
 		break;
 	case EXCIT_PRODUCT:
-		ALLOC_EXCIT(it, excit_product_func_table);
+		ALLOC_EXCIT(prod);
 		break;
 	case EXCIT_SLICE:
-		ALLOC_EXCIT(it, excit_slice_func_table);
+		ALLOC_EXCIT(slice);
 		break;
 	default:
 		goto error;
@@ -1573,15 +1594,24 @@ error:
 	return NULL;
 }
 
-excit_t excit_alloc_user(const struct excit_func_table_s *functions)
+excit_t excit_alloc_user(struct excit_func_table_s *func_table,
+			 size_t data_size)
 {
 	excit_t it;
 
-	it = malloc(sizeof(const struct excit_s));
+	if (!func_table || !data_size)
+		return NULL;
+	it = malloc(sizeof(struct excit_s) + data_size);
 	if (!it)
 		return NULL;
-	ALLOC_EXCIT(it, (*functions));
+	it->data = (void *)((char *)it + sizeof(struct excit_s));
+	if (!func_table->alloc)
+		goto error;
+	it->func_table = func_table;
+	it->dimension = 0;
 	it->type = EXCIT_USER;
+	if (func_table->alloc(it))
+		goto error;
 	return it;
 error:
 	free(it);
@@ -1592,14 +1622,14 @@ excit_t excit_dup(excit_t it)
 {
 	excit_t result = NULL;
 
-	if (!it || !it->data || !it->functions
-	    || !it->functions->copy)
+	if (!it || !it->data || !it->func_table
+	    || !it->func_table->copy)
 		return NULL;
 	result = excit_alloc(it->type);
 	if (!result)
 		return NULL;
 	result->dimension = it->dimension;
-	if (it->functions->copy(result, it))
+	if (it->func_table->copy(result, it))
 		goto error;
 	return result;
 error:
@@ -1611,10 +1641,10 @@ void excit_free(excit_t it)
 {
 	if (!it)
 		return;
-	if (!it->functions)
+	if (!it->func_table)
 		goto error;
-	if (it->functions->free)
-		it->functions->free(it);
+	if (it->func_table->free)
+		it->func_table->free(it);
 error:
 	free(it);
 }
@@ -1637,76 +1667,76 @@ int excit_type(excit_t it, enum excit_type_e *type)
 
 int excit_next(excit_t it, ssize_t *indexes)
 {
-	if (!it || !it->functions)
+	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
-	if (!it->functions->next)
+	if (!it->func_table->next)
 		return -EXCIT_ENOTSUP;
-	return it->functions->next(it, indexes);
+	return it->func_table->next(it, indexes);
 }
 
 int excit_peek(const excit_t it, ssize_t *indexes)
 {
-	if (!it || !it->functions)
+	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
-	if (!it->functions->peek)
+	if (!it->func_table->peek)
 		return -EXCIT_ENOTSUP;
-	return it->functions->peek(it, indexes);
+	return it->func_table->peek(it, indexes);
 }
 
 int excit_size(const excit_t it, ssize_t *size)
 {
-	if (!it || !it->functions || !size)
+	if (!it || !it->func_table || !size)
 		return -EXCIT_EINVAL;
-	if (!it->functions->size)
+	if (!it->func_table->size)
 		return -EXCIT_ENOTSUP;
-	return it->functions->size(it, size);
+	return it->func_table->size(it, size);
 }
 
 int excit_rewind(excit_t it)
 {
-	if (!it || !it->functions)
+	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
-	if (!it->functions->rewind)
+	if (!it->func_table->rewind)
 		return -EXCIT_ENOTSUP;
-	return it->functions->rewind(it);
+	return it->func_table->rewind(it);
 }
 
 int excit_split(const excit_t it, ssize_t n, excit_t *results)
 {
-	if (!it || !it->functions)
+	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
 	if (n <= 0)
 		return -EXCIT_EDOM;
-	if (!it->functions->split)
+	if (!it->func_table->split)
 		return -EXCIT_ENOTSUP;
-	return it->functions->split(it, n, results);
+	return it->func_table->split(it, n, results);
 }
 
 int excit_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 {
-	if (!it || !it->functions)
+	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
-	if (!it->functions->nth)
+	if (!it->func_table->nth)
 		return -EXCIT_ENOTSUP;
-	return it->functions->nth(it, n, indexes);
+	return it->func_table->nth(it, n, indexes);
 }
 
 int excit_n(const excit_t it, const ssize_t *indexes, ssize_t *n)
 {
-	if (!it || !it->functions || !indexes)
+	if (!it || !it->func_table || !indexes)
 		return -EXCIT_EINVAL;
-	if (!it->functions->n)
+	if (!it->func_table->n)
 		return -EXCIT_ENOTSUP;
-	return it->functions->n(it, indexes, n);
+	return it->func_table->n(it, indexes, n);
 }
 
 int excit_pos(const excit_t it, ssize_t *n)
 {
-	if (!it || !it->functions)
+	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
-	if (!it->functions->pos)
+	if (!it->func_table->pos)
 		return -EXCIT_ENOTSUP;
-	return it->functions->pos(it, n);
+	return it->func_table->pos(it, n);
 }
 
 int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped)
