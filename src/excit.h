@@ -17,9 +17,29 @@ enum excit_error_e {
 	EXCIT_EINVAL,
 	EXCIT_EDOM,
 	EXCIT_ENOTSUP
+
+struct excit_s {
+	const struct excit_func_table_s *functions;
+	ssize_t dimension;
+	enum excit_type_e type;
+	void *data;
 };
 
 typedef struct excit_s *excit_t;
+
+struct excit_func_table_s {
+	int (*alloc)(excit_t it);
+	void (*free)(excit_t it);
+	int (*copy)(excit_t dst_it, const excit_t src_it);
+	int (*next)(excit_t it, ssize_t *indexes);
+	int (*peek)(const excit_t it, ssize_t *indexes);
+	int (*size)(const excit_t it, ssize_t *size);
+	int (*rewind)(excit_t it);
+	int (*split)(const excit_t it, ssize_t n, excit_t *results);
+	int (*nth)(const excit_t it, ssize_t n, ssize_t *indexes);
+	int (*n)(const excit_t it, const ssize_t *indexes, ssize_t *n);
+	int (*pos)(const excit_t it, ssize_t *n);
+};
 
 excit_t excit_alloc(enum excit_type_e type);
 excit_t excit_dup(const excit_t it);

@@ -1,27 +1,6 @@
 #include <stdlib.h>
 #include <excit.h>
 
-struct excit_func_table_s {
-	int (*alloc)(excit_t data);
-	void (*free)(excit_t data);
-	int (*copy)(excit_t dst, const excit_t src);
-	int (*next)(excit_t data, ssize_t *indexes);
-	int (*peek)(const excit_t data, ssize_t *indexes);
-	int (*size)(const excit_t data, ssize_t *size);
-	int (*rewind)(excit_t data);
-	int (*split)(const excit_t data, ssize_t n, excit_t *results);
-	int (*nth)(const excit_t data, ssize_t n, ssize_t *indexes);
-	int (*n)(const excit_t data, const ssize_t *indexes, ssize_t *n);
-	int (*pos)(const excit_t it, ssize_t *n);
-};
-
-struct excit_s {
-	const struct excit_func_table_s *functions;
-	ssize_t dimension;
-	enum excit_type_e type;
-	void *data;
-};
-
 /*--------------------------------------------------------------------*/
 
 struct slice_it_s {
