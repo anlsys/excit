@@ -1,3 +1,4 @@
+AM_CFLAGS = -Wall -Werror -pedantic
 
 lib_LTLIBRARIES = libexcit.la
 
