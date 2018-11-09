@@ -7,7 +7,8 @@ enum excit_type_e {
 	EXCIT_REPEAT,
 	EXCIT_HILBERT2D,
 	EXCIT_PRODUCT,
-	EXCIT_SLICE
+	EXCIT_SLICE,
+	EXCIT_TYPE_MAX
 };
 
 enum excit_error_e {
@@ -16,7 +17,9 @@ enum excit_error_e {
 	EXCIT_ENOMEM,
 	EXCIT_EINVAL,
 	EXCIT_EDOM,
-	EXCIT_ENOTSUP
+	EXCIT_ENOTSUP,
+	EXCIT_ERROR_MAX
+};
 
 struct excit_s {
 	const struct excit_func_table_s *functions;
