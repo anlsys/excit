@@ -1538,6 +1538,21 @@ error:
 	return NULL;
 }
 
+excit_t excit_alloc_user(const struct excit_func_table_s *functions)
+{
+	excit_t it;
+
+	it = malloc(sizeof(const struct excit_s));
+	if (!it)
+		return NULL;
+	ALLOC_EXCIT(it, (*functions));
+	it->type = EXCIT_USER;
+	return it;
+error:
+	free(it);
+	return NULL;
+}
+
 excit_t excit_dup(excit_t it)
 {
 	excit_t result = NULL;
@@ -1559,10 +1574,13 @@ error:
 
 void excit_free(excit_t it)
 {
-	if (!it || !it->functions)
+	if (!it)
 		return;
+	if (!it->functions)
+		goto error;
 	if (it->functions->free)
 		it->functions->free(it);
+error:
 	free(it);
 }
 

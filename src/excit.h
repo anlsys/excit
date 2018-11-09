@@ -8,6 +8,7 @@ enum excit_type_e {
 	EXCIT_HILBERT2D,
 	EXCIT_PRODUCT,
 	EXCIT_SLICE,
+	EXCIT_USER,
 	EXCIT_TYPE_MAX
 };
 
@@ -45,6 +46,7 @@ struct excit_func_table_s {
 };
 
 excit_t excit_alloc(enum excit_type_e type);
+excit_t excit_alloc_user(const struct excit_func_table_s *functions);
 excit_t excit_dup(const excit_t it);
 void excit_free(excit_t it);
 
