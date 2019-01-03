@@ -54,9 +54,10 @@ void tleaf_it_free(excit_t it)
 }
 
 int excit_tleaf_init(excit_t it,
-		  const ssize_t depth,
-		  const ssize_t* arities,
-		  const enum tleaf_it_policy_e policy)
+		     const ssize_t depth,
+		     const ssize_t* arities,
+		     const enum tleaf_it_policy_e policy,
+		     const ssize_t offset)
 {
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
@@ -69,6 +70,7 @@ int excit_tleaf_init(excit_t it,
   ssize_t i;
   data_it->leaves = 1;
   data_it->depth = depth;
+  data_it->offset = offset;
   for(i=0; i<depth-1; i++){
     data_it->arity[i] = arities[i];
     data_it->leaves *= arities[i];
@@ -108,10 +110,9 @@ int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
   if(dst == NULL || src == NULL) return EXCIT_EINVAL;
   
   //actual copy
-  err = excit_tleaf_init(dst_it, src->depth, src->arity, src->policy);
+  err = excit_tleaf_init(dst_it, src->depth, src->arity, src->policy, src->offset);
   if(err != EXCIT_SUCCESS) return err;
   dst->cur = src->cur;
-  dst->offset = src->offset;
   return EXCIT_SUCCESS;
 }
 
@@ -244,13 +245,12 @@ int tleaf_it_split(const excit_t it, ssize_t n, excit_t *results){
   int err;
   for(i=0; i<n; i++){
     results[i] = excit_alloc_user(&excit_tleaf_func_table, sizeof(*data_it));
-    excit_tleaf_init(results[i], depth, arities, policy);
     err = excit_get_data(results[i], (void**)(&data_it));
     if(err != EXCIT_SUCCESS || data_it == NULL) {
       while(i--){ excit_free(results[i]); }
       return err;
     }
-    data_it->offset = data_it->leaves*i;
+    excit_tleaf_init(results[i], depth, arities, policy, data_it->leaves*i + data_it->offset);
   }
 
   free(arities);

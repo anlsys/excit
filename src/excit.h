@@ -408,6 +408,6 @@ enum tleaf_it_policy_e {
  * "arity": For each level, the number of children attached to a node. Leaves have no children, hence last level arity must be 0.
  * "iter_policy": A policy for iteration on leaves.
  */
-int excit_tleaf_init(excit_t it, const ssize_t depth, const ssize_t* arity, const enum tleaf_it_policy_e iter_policy);
+int excit_tleaf_init(excit_t it, const ssize_t depth, const ssize_t* arity, const enum tleaf_it_policy_e iter_policy, const ssize_t offset);
 
 #endif
