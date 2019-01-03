@@ -1,0 +1,326 @@
+#include "cons.h"
+
+#define EXCIT_DATA(data, it)				\
+  if(data == NULL) { return EXCIT_EINVAL; }		\
+  do{							\
+    int err = excit_get_data(data, (void**)(&it));	\
+    if(err != EXCIT_SUCCESS) { return err; }		\
+  } while(0);						\
+  if(it == NULL){ return EXCIT_EINVAL; }
+
+
+static void circular_fifo_add(struct circular_fifo_s *fifo, ssize_t elem)
+{
+  if (fifo->size == fifo->length) {
+    fifo->start = (fifo->start + 1) % fifo->length;
+    fifo->end = (fifo->end + 1) % fifo->length;
+  } else {
+    fifo->end = (fifo->end + 1) % fifo->length;
+    fifo->size++;
+  }
+  fifo->buffer[fifo->end] = elem;
+}
+
+static void circular_fifo_dump(const struct circular_fifo_s *fifo, 
+			       ssize_t *vals)
+{
+  ssize_t i;
+  ssize_t j;
+
+  for (i = 0, j = fifo->start; i < fifo->size; i++) {
+    vals[i] = fifo->buffer[j];
+    j = (j + 1) % fifo->length;
+  }
+}
+
+
+struct excit_func_table_s excit_cons_func_table = {
+  cons_it_alloc,
+  cons_it_free,
+  cons_it_copy,
+  cons_it_next,
+  cons_it_peek,
+  cons_it_size,
+  cons_it_rewind,
+  cons_it_split,
+  cons_it_nth,
+  cons_it_rank,
+  cons_it_pos
+};
+
+int cons_it_alloc(excit_t data)
+{
+  struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+
+  it->it = NULL;
+  it->n = 0;
+  it->fifo.length = 0;
+  it->fifo.start = 0;
+  it->fifo.end = -1;
+  it->fifo.size = 0;
+  it->fifo.buffer = NULL;
+  return EXCIT_SUCCESS;
+}
+
+void cons_it_free(excit_t data)
+{
+  struct cons_it_s *it;
+  if(data == NULL) { return ; }
+  int err = excit_get_data(data, (void**)(&it));
+  if(err != EXCIT_SUCCESS) { return; }
+  if(it == NULL){ return; }
+
+  excit_free(it->it);
+  free(it->fifo.buffer);
+}
+
+int cons_it_copy(excit_t ddst, const excit_t dsrc)
+{
+  struct cons_it_s *dst;
+  EXCIT_DATA(ddst, dst);
+  const struct cons_it_s *src;
+  EXCIT_DATA(dsrc, src);
+  excit_t copy = excit_dup(src->it);
+
+  if (!copy)
+    return -EXCIT_EINVAL;
+  dst->it = copy;
+  dst->n = src->n;
+  dst->fifo.length = src->fifo.length;
+  dst->fifo.start = src->fifo.start;
+  dst->fifo.end = src->fifo.end;
+  dst->fifo.size = src->fifo.size;
+  dst->fifo.buffer =
+    (ssize_t *) malloc(src->fifo.length * sizeof(ssize_t));
+  if (!dst->fifo.buffer) {
+    excit_free(copy);
+    return -EXCIT_ENOMEM;
+  }
+  for (int i = 0; i < dst->fifo.length; i++)
+    dst->fifo.buffer[i] = src->fifo.buffer[i];
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_size(const excit_t data, ssize_t *size)
+{
+  const struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  ssize_t tmp_size = 0;
+  int err = excit_size(it->it, &tmp_size);
+
+  if (err)
+    return err;
+  *size = tmp_size - (it->n - 1);
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_split(const excit_t data, ssize_t n, excit_t *results)
+{
+  ssize_t size;
+  int err = cons_it_size(data, &size);
+
+  if (err)
+    return err;
+  if (size < n)
+    return -EXCIT_EDOM;
+  if (!results)
+    return EXCIT_SUCCESS;
+  excit_t range = excit_alloc(EXCIT_RANGE);
+
+  if (!range)
+    return -EXCIT_ENOMEM;
+  err = excit_range_init(range, 0, size - 1, 1);
+  if (err)
+    goto error1;
+  err = excit_split(range, n, results);
+  if (err)
+    goto error1;
+  int i;
+
+  for (i = 0; i < n; i++) {
+    excit_t tmp, tmp2;
+
+    tmp = excit_dup(data);
+    if (!tmp)
+      goto error2;
+    tmp2 = results[i];
+    results[i] = excit_alloc(EXCIT_SLICE);
+    if (!results[i]) {
+      excit_free(tmp2);
+      goto error2;
+    }
+    err = excit_slice_init(results[i], tmp, tmp2);
+    if (err) {
+      excit_free(tmp2);
+      goto error2;
+    }
+  }
+  excit_free(range);
+  return EXCIT_SUCCESS;
+error2:
+  for (; i >= 0; i--)
+    excit_free(results[i]);
+error1:
+  excit_free(range);
+  return err;
+}
+
+int cons_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
+{
+  ssize_t size;
+  int err = cons_it_size(data, &size);
+
+  if (err)
+    return err;
+  if (n < 0 || n >= size)
+    return -EXCIT_EDOM;
+  const struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  int dim = excit_get_dimension(it->it);
+
+  if (indexes) {
+    for (int i = 0; i < it->n; i++) {
+      err = excit_nth(it->it, n + i, indexes + dim * i);
+      if (err)
+	return err;
+    }
+  }
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_rank(const excit_t data, const ssize_t *indexes, ssize_t *n)
+{
+  const struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  ssize_t inner_n, inner_n_tmp;
+  int err = excit_rank(it->it, indexes, &inner_n);
+
+  if (err)
+    return err;
+  int dim = excit_get_dimension(it->it);
+
+  for (int i = 1; i < it->n; i++) {
+    err = excit_rank(it->it, indexes + dim * i, &inner_n_tmp);
+    if (err)
+      return err;
+    if (inner_n_tmp != inner_n + 1)
+      return -EXCIT_EINVAL;
+    inner_n = inner_n_tmp;
+  }
+  if (n)
+    *n = inner_n - (it->n - 1);
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_pos(const excit_t data, ssize_t *n)
+{
+  ssize_t inner_n;
+  const struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  int err = excit_pos(it->it, &inner_n);
+
+  if (err)
+    return err;
+  if (n)
+    *n = inner_n - (it->n - 1);
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_peek(const excit_t data, ssize_t *indexes)
+{
+  const struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  int err;
+  int dim = excit_get_dimension(it->it);
+  int n = it->n;
+
+  if (indexes) {
+    circular_fifo_dump(&it->fifo, indexes);
+    err = excit_peek(it->it, indexes + dim * (n - 1));
+  } else
+    err = excit_peek(it->it, NULL);
+  if (err)
+    return err;
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_next(excit_t data, ssize_t *indexes)
+{
+  struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  int err;
+  int dim = excit_get_dimension(it->it);
+  int n = it->n;
+
+  if (indexes) {
+    circular_fifo_dump(&it->fifo, indexes);
+    err = excit_next(it->it, indexes + dim * (n - 1));
+  } else
+    err = excit_next(it->it, NULL);
+  if (err)
+    return err;
+  if (indexes)
+    for (int i = dim * (n - 1); i < dim * n; i++)
+      circular_fifo_add(&it->fifo, indexes[i]);
+  return EXCIT_SUCCESS;
+}
+
+int cons_it_rewind(excit_t data)
+{
+  struct cons_it_s *it;
+  EXCIT_DATA(data, it);
+  int err = excit_rewind(it->it);
+
+  if (err)
+    return err;
+  it->fifo.start = 0;
+  it->fifo.end = -1;
+  it->fifo.size = 0;
+
+  for (int i = 0; i < it->n - 1; i++) {
+    int err;
+
+    err =
+      excit_next(it->it, it->fifo.buffer + excit_get_dimension(it->it) * i);
+    if (err)
+      return err;
+    it->fifo.size += excit_get_dimension(it->it);
+    it->fifo.end += excit_get_dimension(it->it);
+  }
+  return EXCIT_SUCCESS;
+}
+
+int excit_cons_init(excit_t it, excit_t src, ssize_t n)
+{
+  ssize_t src_size;
+  int err;
+
+  if (!it || !src || n <= 0)
+    return -EXCIT_EINVAL;
+  err = excit_size(src, &src_size);
+  if (err)
+    return err;
+  if (src_size < n)
+    return -EXCIT_EINVAL;
+  struct cons_it_s *cons_it;
+  EXCIT_DATA(it, cons_it);
+
+  free(cons_it->fifo.buffer);
+  excit_free(cons_it->it);
+  excit_set_dimension(it, excit_get_dimension(src) * n);
+  cons_it->it = src;
+  cons_it->n = n;
+  cons_it->fifo.length = excit_get_dimension(src) * (n - 1);
+  cons_it->fifo.buffer =
+    (ssize_t *) malloc(cons_it->fifo.length * sizeof(ssize_t));
+  if (!cons_it->fifo.buffer)
+    return -EXCIT_ENOMEM;
+  err = cons_it_rewind(it);
+  if (err) {
+    free(cons_it->fifo.buffer);
+    return err;
+  }
+  return EXCIT_SUCCESS;
+}
+
