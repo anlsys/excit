@@ -407,7 +407,9 @@ enum tleaf_it_policy_e {
  * "depth": the total number of levels of the tree, including leaves
  * "arity": For each level, the number of children attached to a node. Leaves have no children, hence last level arity must be 0.
  * "iter_policy": A policy for iteration on leaves.
+ * "offset": Offset on output. Usually 0.
+ * "stride": Stride applied at eache level for indexing. Usually 1. If NULLm it is set to one at each level..
  */
-int excit_tleaf_init(excit_t it, const ssize_t depth, const ssize_t* arity, const enum tleaf_it_policy_e iter_policy, const ssize_t offset);
+int excit_tleaf_init(excit_t it, const ssize_t depth, const ssize_t* arity, const enum tleaf_it_policy_e iter_policy, const ssize_t offset, const_ssize_t* strides);
 
 #endif

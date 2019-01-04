@@ -5,10 +5,11 @@
 
 struct tleaf_it_s{
   ssize_t                cur;          // cursor of iterator position
-  ssize_t                offset;       // When split occures, we need to infer an offset in indexing
   ssize_t                depth;        // The tree depth
   ssize_t*               arity;        // Number of children per node on each level
-  ssize_t                leaves;       // Number of leaves
+  ssize_t*               nleaves;      // Number of leaves below each level
+  ssize_t                offset;       // When split occures, a resulting chunk can be offset as a subtree of the original one.
+  ssize_t*               strides;      // When split occures, indexing might not be contiguous anymore, the stride is applied by level. It shall be increased by 1 on level where split occures.
   enum tleaf_it_policy_e policy;       // iteration policy
 };
 

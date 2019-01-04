@@ -37,6 +37,8 @@ int tleaf_it_alloc(excit_t it)
   excit_set_dimension(it, 1); 
   data_it->cur = 0;
   data_it->offset=0;
+  data_it->strides=NULL;
+  data_it->nleaves=NULL;
   data_it->depth = 0;
   data_it->arity = NULL;
   data_it->policy = ROUND_ROBIN;
@@ -49,6 +51,9 @@ void tleaf_it_free(excit_t it)
   tleaf_it data_it;
   excit_get_data(it, (void**)(&data_it));
   if(data_it == NULL){ return; }
+  if(data_it->arity != NULL) free(data_it->arity);
+  if(data_it->nleaves != NULL) free(data_it->nleaves);
+  if(data_it->strides != NULL) free(data_it->strides);
   free(data_it->arity);
   return;
 }
@@ -57,26 +62,45 @@ int excit_tleaf_init(excit_t it,
 		     const ssize_t depth,
 		     const ssize_t* arities,
 		     const enum tleaf_it_policy_e policy,
-		     const ssize_t offset)
+		     const ssize_t offset,
+		     const ssize_t* strides)
 {
+  int err = EXCIT_SUCCESS;
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
-  data_it->arity = malloc(sizeof(*data_it->arity) * depth);
+  
+  data_it->arity = malloc(sizeof(*data_it->arity) * depth);  
   if(data_it->arity == NULL){
     perror("malloc");
-    return EXCIT_ENOMEM;
+    err = EXCIT_ENOMEM;
+    goto error;
   }
 
-  ssize_t i;
-  data_it->leaves = 1;
-  data_it->depth = depth;
-  data_it->offset = offset;
+  data_it->sttrides = malloc(sizeof(*data_it->strides) * depth);  
+  if(data_it->strides == NULL){
+    perror("malloc");
+    err = EXCIT_ENOMEM;
+    goto error_with_arity;
+  }
+  
+  ssize_t i, nleaves        = 1;
+  data_it->depth            = depth;
+  data_it->offset           = offset;
+  data_it->policy           = policy;
+  data_it->strides[0]       = 1;
+  data_it->arity[depth-1]   = 1;
+  data_it->nleaves[depth-1] = 1;
   for(i=0; i<depth-1; i++){
     data_it->arity[i] = arities[i];
-    data_it->leaves *= arities[i];
+    data_it->strides[i+1] = strides ? strides[i+1] : 1;
+    data_it->nleaves[depth-i-2] = data_it->nleaves[depth-i-1] * arities[depth-i-1];
   }
-  data_it->policy = policy;
+  
   return EXCIT_SUCCESS;
+error_with_arity:
+  free(data_it->arity);
+error:
+  return err;
 }
 
 int tleaf_it_size(const excit_t it, ssize_t *size)
@@ -84,7 +108,7 @@ int tleaf_it_size(const excit_t it, ssize_t *size)
   if(size == NULL){ return EXCIT_EINVAL; }
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
-  *size = data_it->leaves;
+  *size = data_it->nleaves{0};
   return EXCIT_SUCCESS;
 }
 
@@ -110,7 +134,7 @@ int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
   if(dst == NULL || src == NULL) return EXCIT_EINVAL;
   
   //actual copy
-  err = excit_tleaf_init(dst_it, src->depth, src->arity, src->policy, src->offset);
+  err = excit_tleaf_init(dst_it, src->depth, src->arity, src->policy, src->offset, src->strides);
   if(err != EXCIT_SUCCESS) return err;
   dst->cur = src->cur;
   return EXCIT_SUCCESS;
@@ -121,14 +145,14 @@ int tleaf_it_pos(const excit_t it, ssize_t* value)
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
   *value = data_it->cur;
-  if(data_it->cur >= data_it->leaves){ return EXCIT_STOPIT; }
+  if(data_it->cur >= data_it->nleaves[0]){ return EXCIT_STOPIT; }
   return EXCIT_SUCCESS;
 }
 
 int tleaf_it_nth_round_robin(const tleaf_it it, const ssize_t n, ssize_t* value)
 {
   //no check performed here
-  *value = n + it->offset;
+  *value = n * it->stride + it->offset;
   return EXCIT_SUCCESS;
 }
 
@@ -138,7 +162,7 @@ int tleaf_it_nth_scatter(const tleaf_it it, ssize_t c, ssize_t* value)
   ssize_t depth = 0;
   ssize_t arity = 0;
   ssize_t r = 0;
-  ssize_t n = it->leaves;
+  ssize_t n = it->nleaves[0];
   ssize_t pos = 0;
   
   for(depth = 0; depth < (it->depth-1); depth++){
@@ -148,9 +172,13 @@ int tleaf_it_nth_scatter(const tleaf_it it, ssize_t c, ssize_t* value)
     pos += n*r;
     c = c / arity;
   }
-  *value = pos + it->offset;
+  *value = pos * it->stride + it->offset;
   
   return EXCIT_SUCCESS;
+}
+
+static ssize_t tleaf_real_index_to_structure_index(tleaf_it it, const ssize_t n){
+  ssize_t i;
 }
 
 int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
@@ -160,7 +188,7 @@ int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
   
-  if(n < 0 || n >= data_it->leaves)
+  if(n < 0 || n >= data_it->nleaves[0])
     return EXCIT_EDOM;
 
   int err = EXCIT_SUCCESS;
@@ -176,6 +204,8 @@ int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
     err = EXCIT_EINVAL;
     break;
   }
+
+  /* Compute here transformed index */
   return err;
 }
 
@@ -183,7 +213,7 @@ int tleaf_it_peek(const excit_t it, ssize_t* value)
 {
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
-  if(data_it->cur >= data_it->leaves){ return EXCIT_STOPIT; }
+  if(data_it->cur >= data_it->nleaves[0]){ return EXCIT_STOPIT; }
   return tleaf_it_nth(it, data_it->cur, value);
 }
 
@@ -198,6 +228,9 @@ int tleaf_it_next(excit_t it, ssize_t* indexes)
   return err;
 }
 
+static ssize_t tleaf_structure_index_to_real_index(tleaf_it it, const ssize_t n){
+  ssize_t i;
+}
 
 int tleaf_it_rank(const excit_t it,
 		  const ssize_t *indexes,
@@ -206,12 +239,29 @@ int tleaf_it_rank(const excit_t it,
   // the function nth is symmetric
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
-  return tleaf_it_nth(it, *indexes - data_it->offset, n);
+
+  /* check that indexes is a possible output index */ 
+  /* transform back and compute transformed index rank */
+  
+  int err = EXCIT_SUCCESS;  
+  switch(data_it->policy){
+  case ROUND_ROBIN:
+    err = tleaf_it_nth_round_robin(data_it, *indexes, n);
+    break;
+  case SCATTER:
+    err = tleaf_it_nth_scatter(data_it, *indexes, n);
+    break;
+  default:
+    err = EXCIT_EINVAL;
+    break;
+  }
+  
+  return tleaf_it_nth(it, (*indexes / it->stride) - data_it->offset, n);
 }
   
 int tleaf_it_split(const excit_t it, ssize_t n, excit_t *results){
   // Split is done on a level which arity is a multiple of n.
-  // From root to leaves, the first matching levels is used for the split.
+  // From root to nleaves[0], the first matching levels is used for the split.
 
   if(n<0 || (n>0 && results==NULL))
     return EXCIT_EINVAL;
@@ -220,12 +270,14 @@ int tleaf_it_split(const excit_t it, ssize_t n, excit_t *results){
 
   tleaf_it data_it;
   EXCIT_DATA(it, data_it);
-  if(n > data_it->leaves || data_it->leaves%n != 0)
+  if(n > data_it->nleaves[0] || data_it->nleaves[0]%n != 0)
     return EXCIT_EDOM;
 
   ssize_t i = 0;
   int split = 0;
-  ssize_t depth=data_it->depth;
+  ssize_t depth                 = data_it->depth;
+  ssize_t offset                = data_it->offset;
+  ssize_t stride                = data_it->stride;
   enum tleaf_it_policy_e policy = data_it->policy;
   ssize_t* arities = malloc(sizeof(*arities) * depth);
   
@@ -237,6 +289,7 @@ int tleaf_it_split(const excit_t it, ssize_t n, excit_t *results){
     if(! split && data_it->arity[i] % n == 0){
       arities[i] = data_it->arity[i]/n;
       split=1;
+      stride *= arities[i] 
     } else {
       arities[i] = data_it->arity[i];
     }
@@ -250,7 +303,7 @@ int tleaf_it_split(const excit_t it, ssize_t n, excit_t *results){
       while(i--){ excit_free(results[i]); }
       return err;
     }
-    excit_tleaf_init(results[i], depth, arities, policy, data_it->leaves*i + data_it->offset);
+    excit_tleaf_init(results[i], depth, arities, policy, data_it->nleaves[0]*i + data_it->offset);
   }
 
   free(arities);
