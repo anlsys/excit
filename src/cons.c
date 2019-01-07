@@ -1,4 +1,3 @@
-#include "excit.h"
 #include "dev/excit.h"
 #include "cons.h"
 
