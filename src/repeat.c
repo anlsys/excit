@@ -96,7 +96,34 @@ static int repeat_it_pos(const excit_t data, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-static int repeat_it_split(const excit_t data, ssize_t n, excit_t *results)
+struct excit_func_table_s excit_repeat_func_table = {
+	repeat_it_alloc,
+	repeat_it_free,
+	repeat_it_copy,
+	repeat_it_next,
+	repeat_it_peek,
+	repeat_it_size,
+	repeat_it_rewind,
+	NULL,
+	repeat_it_nth,
+	NULL,
+	repeat_it_pos
+};
+
+int excit_repeat_init(excit_t it, excit_t src, ssize_t n)
+{
+	if (!it || it->type != EXCIT_REPEAT || !src || n <= 0)
+		return -EXCIT_EINVAL;
+	struct repeat_it_s *repeat_it = (struct repeat_it_s *)it->data;
+	excit_free(repeat_it->it);
+	it->dimension = src->dimension;
+	repeat_it->it = src;
+	repeat_it->n = n;
+	repeat_it->counter = 0;
+	return EXCIT_SUCCESS;
+}
+
+int excit_repeat_split(const excit_t data, ssize_t n, excit_t *results)
 {
 	const struct repeat_it_s *it = (const struct repeat_it_s *)data->data;
 	int err = excit_split(it->it, n, results);
@@ -124,31 +151,4 @@ error:
 	for (int i = 0; i < n; i++)
 		excit_free(results[i]);
 	return err;
-}
-
-struct excit_func_table_s excit_repeat_func_table = {
-	repeat_it_alloc,
-	repeat_it_free,
-	repeat_it_copy,
-	repeat_it_next,
-	repeat_it_peek,
-	repeat_it_size,
-	repeat_it_rewind,
-	repeat_it_split,
-	repeat_it_nth,
-	NULL,
-	repeat_it_pos
-};
-
-int excit_repeat_init(excit_t it, excit_t src, ssize_t n)
-{
-	if (!it || it->type != EXCIT_REPEAT || !src || n <= 0)
-		return -EXCIT_EINVAL;
-	struct repeat_it_s *repeat_it = (struct repeat_it_s *)it->data;
-	excit_free(repeat_it->it);
-	it->dimension = src->dimension;
-	repeat_it->it = src;
-	repeat_it->n = n;
-	repeat_it->counter = 0;
-	return EXCIT_SUCCESS;
 }

@@ -239,9 +239,54 @@ int excit_split(const excit_t it, ssize_t n, excit_t *results)
 		return -EXCIT_EINVAL;
 	if (n <= 0)
 		return -EXCIT_EDOM;
-	if (!it->func_table->split)
-		return -EXCIT_ENOTSUP;
-	return it->func_table->split(it, n, results);
+	if (!it->func_table->split) {
+		ssize_t size;
+		int err = excit_size(it, &size);
+
+		if (err)
+			return err;
+		if (size < n)
+			return -EXCIT_EDOM;
+		if (!results)
+			return EXCIT_SUCCESS;
+		excit_t range = excit_alloc(EXCIT_RANGE);
+
+		if (!range)
+			return -EXCIT_ENOMEM;
+		err = excit_range_init(range, 0, size - 1, 1);
+		if (err)
+			goto error1;
+		err = excit_split(range, n, results);
+		if (err)
+			goto error1;
+		for (int i = 0; i < n; i++) {
+			excit_t tmp, tmp2;
+
+			tmp = excit_dup(it);
+			if (!tmp)
+				goto error2;
+			tmp2 = results[i];
+			results[i] = excit_alloc(EXCIT_SLICE);
+			if (!results[i]) {
+				excit_free(tmp2);
+				goto error2;
+			}
+			err = excit_slice_init(results[i], tmp, tmp2);
+			if (err) {
+				excit_free(tmp2);
+				goto error2;
+			}
+		}
+		excit_free(range);
+		return EXCIT_SUCCESS;
+error2:
+		for (int i = 0; i < n; i++)
+			excit_free(results[i]);
+error1:
+		excit_free(range);
+		return err;
+	} else
+		return it->func_table->split(it, n, results);
 }
 
 int excit_nth(const excit_t it, ssize_t n, ssize_t *indexes)

@@ -372,7 +372,7 @@ void test_repeat_iterator(void)
 	assert(excit_peek(it, indexes) == EXCIT_STOPIT);
 	assert(excit_next(it, indexes) == EXCIT_STOPIT);
 
-	assert(excit_split(it, 2, its) == ES);
+	assert(excit_repeat_split(it, 2, its) == ES);
 	for (int i = 0; i <= 1; i++) {
 		for (int j = 0; j < 2; j++) {
 			assert(excit_peek(its[0], indexes) == ES);
