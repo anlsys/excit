@@ -8,19 +8,19 @@
 #include "hilbert2d.h"
 #include "range.h"
 
-#define CASE(val) case val: return #val; break;
+#define CASE(val) case val: return #val; break
 
 const char *excit_type_name(enum excit_type_e type)
 {
 	switch (type) {
-		CASE(EXCIT_RANGE)
-		    CASE(EXCIT_CONS)
-		    CASE(EXCIT_REPEAT)
-		    CASE(EXCIT_HILBERT2D)
-		    CASE(EXCIT_PRODUCT)
-		    CASE(EXCIT_SLICE)
-		    CASE(EXCIT_USER)
-		    CASE(EXCIT_TYPE_MAX)
+		CASE(EXCIT_RANGE);
+		CASE(EXCIT_CONS);
+		CASE(EXCIT_REPEAT);
+		CASE(EXCIT_HILBERT2D);
+		CASE(EXCIT_PRODUCT);
+		CASE(EXCIT_SLICE);
+		CASE(EXCIT_USER);
+		CASE(EXCIT_TYPE_MAX);
 	default:
 		return NULL;
 	}
@@ -29,13 +29,13 @@ const char *excit_type_name(enum excit_type_e type)
 const char *excit_error_name(enum excit_error_e err)
 {
 	switch (err) {
-		CASE(EXCIT_SUCCESS)
-		    CASE(EXCIT_STOPIT)
-		    CASE(EXCIT_ENOMEM)
-		    CASE(EXCIT_EINVAL)
-		    CASE(EXCIT_EDOM)
-		    CASE(EXCIT_ENOTSUP)
-		    CASE(EXCIT_ERROR_MAX)
+		CASE(EXCIT_SUCCESS);
+		CASE(EXCIT_STOPIT);
+		CASE(EXCIT_ENOMEM);
+		CASE(EXCIT_EINVAL);
+		CASE(EXCIT_EDOM);
+		CASE(EXCIT_ENOTSUP);
+		CASE(EXCIT_ERROR_MAX);
 	default:
 		return NULL;
 	}
@@ -127,7 +127,7 @@ error:
 	return NULL;
 }
 
-excit_t excit_alloc_user(struct excit_func_table_s * func_table,
+excit_t excit_alloc_user(struct excit_func_table_s *func_table,
 			 size_t data_size)
 {
 	excit_t it;
@@ -181,7 +181,7 @@ error:
 	free(it);
 }
 
-int excit_dimension(excit_t it, ssize_t * dimension)
+int excit_dimension(excit_t it, ssize_t *dimension)
 {
 	if (!it || !dimension)
 		return -EXCIT_EINVAL;
@@ -197,7 +197,7 @@ int excit_type(excit_t it, enum excit_type_e *type)
 	return EXCIT_SUCCESS;
 }
 
-int excit_next(excit_t it, ssize_t * indexes)
+int excit_next(excit_t it, ssize_t *indexes)
 {
 	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
@@ -206,7 +206,7 @@ int excit_next(excit_t it, ssize_t * indexes)
 	return it->func_table->next(it, indexes);
 }
 
-int excit_peek(const excit_t it, ssize_t * indexes)
+int excit_peek(const excit_t it, ssize_t *indexes)
 {
 	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
@@ -215,7 +215,7 @@ int excit_peek(const excit_t it, ssize_t * indexes)
 	return it->func_table->peek(it, indexes);
 }
 
-int excit_size(const excit_t it, ssize_t * size)
+int excit_size(const excit_t it, ssize_t *size)
 {
 	if (!it || !it->func_table || !size)
 		return -EXCIT_EINVAL;
@@ -233,7 +233,7 @@ int excit_rewind(excit_t it)
 	return it->func_table->rewind(it);
 }
 
-int excit_split(const excit_t it, ssize_t n, excit_t * results)
+int excit_split(const excit_t it, ssize_t n, excit_t *results)
 {
 	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
@@ -244,7 +244,7 @@ int excit_split(const excit_t it, ssize_t n, excit_t * results)
 	return it->func_table->split(it, n, results);
 }
 
-int excit_nth(const excit_t it, ssize_t n, ssize_t * indexes)
+int excit_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 {
 	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
@@ -253,7 +253,7 @@ int excit_nth(const excit_t it, ssize_t n, ssize_t * indexes)
 	return it->func_table->nth(it, n, indexes);
 }
 
-int excit_rank(const excit_t it, const ssize_t * indexes, ssize_t * n)
+int excit_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 {
 	if (!it || !it->func_table || !indexes)
 		return -EXCIT_EINVAL;
@@ -262,7 +262,7 @@ int excit_rank(const excit_t it, const ssize_t * indexes, ssize_t * n)
 	return it->func_table->rank(it, indexes, n);
 }
 
-int excit_pos(const excit_t it, ssize_t * n)
+int excit_pos(const excit_t it, ssize_t *n)
 {
 	if (!it || !it->func_table)
 		return -EXCIT_EINVAL;
@@ -271,7 +271,7 @@ int excit_pos(const excit_t it, ssize_t * n)
 	return it->func_table->pos(it, n);
 }
 
-int excit_cyclic_next(excit_t it, ssize_t * indexes, int *looped)
+int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped)
 {
 	int err;
 

@@ -256,7 +256,8 @@ int excit_split(const excit_t it, ssize_t n, excit_t * results);
 /*
  * Gets the nth element of an iterator.
  * "it": an iterator.
- * "rank": rank of the element, comprised between 0 and the size of the iterator.
+ * "rank": rank of the element, comprised between 0 and the size of the
+ *         iterator.
  * "indexes": an array of indexes with a dimension corresponding to that of the
  *            iterator, no results is returned if NULL.
  * Returns EXCIT_SUCCESS or an error code.

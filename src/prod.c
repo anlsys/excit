@@ -63,7 +63,7 @@ static int prod_it_rewind(excit_t data)
 	return EXCIT_SUCCESS;
 }
 
-static int prod_it_size(const excit_t data, ssize_t * size)
+static int prod_it_size(const excit_t data, ssize_t *size)
 {
 	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
 	ssize_t tmp_size = 0;
@@ -87,7 +87,7 @@ static int prod_it_size(const excit_t data, ssize_t * size)
 	return EXCIT_SUCCESS;
 }
 
-static int prod_it_nth(const excit_t data, ssize_t n, ssize_t * indexes)
+static int prod_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 {
 	ssize_t size;
 	int err = prod_it_size(data, &size);
@@ -117,8 +117,8 @@ static int prod_it_nth(const excit_t data, ssize_t n, ssize_t * indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int prod_it_rank(const excit_t data, const ssize_t * indexes,
-			ssize_t * n)
+static int prod_it_rank(const excit_t data, const ssize_t *indexes,
+			ssize_t *n)
 {
 	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
 
@@ -145,7 +145,7 @@ static int prod_it_rank(const excit_t data, const ssize_t * indexes,
 	return EXCIT_SUCCESS;
 }
 
-static int prod_it_pos(const excit_t data, ssize_t * n)
+static int prod_it_pos(const excit_t data, ssize_t *n)
 {
 	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
 
@@ -171,7 +171,7 @@ static int prod_it_pos(const excit_t data, ssize_t * n)
 	return EXCIT_SUCCESS;
 }
 
-static inline int prod_it_peeknext_helper(excit_t data, ssize_t * indexes,
+static inline int prod_it_peeknext_helper(excit_t data, ssize_t *indexes,
 					  int next)
 {
 	struct prod_it_s *it = (struct prod_it_s *)data->data;
@@ -212,17 +212,17 @@ static inline int prod_it_peeknext_helper(excit_t data, ssize_t * indexes,
 	return EXCIT_SUCCESS;
 }
 
-static int prod_it_peek(const excit_t data, ssize_t * indexes)
+static int prod_it_peek(const excit_t data, ssize_t *indexes)
 {
 	return prod_it_peeknext_helper(data, indexes, 0);
 }
 
-static int prod_it_next(excit_t data, ssize_t * indexes)
+static int prod_it_next(excit_t data, ssize_t *indexes)
 {
 	return prod_it_peeknext_helper(data, indexes, 1);
 }
 
-static int prod_it_split(const excit_t data, ssize_t n, excit_t * results)
+static int prod_it_split(const excit_t data, ssize_t n, excit_t *results)
 {
 	ssize_t size;
 	int err = prod_it_size(data, &size);
@@ -271,7 +271,7 @@ error1:
 	return err;
 }
 
-int excit_product_count(const excit_t it, ssize_t * count)
+int excit_product_count(const excit_t it, ssize_t *count)
 {
 	if (!it || it->type != EXCIT_PRODUCT || !count)
 		return -EXCIT_EINVAL;
@@ -280,7 +280,7 @@ int excit_product_count(const excit_t it, ssize_t * count)
 }
 
 int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n,
-			    excit_t * results)
+			    excit_t *results)
 {
 	if (!it || it->type != EXCIT_PRODUCT)
 		return -EXCIT_EINVAL;

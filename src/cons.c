@@ -15,7 +15,7 @@ static void circular_fifo_add(struct circular_fifo_s *fifo, ssize_t elem)
 }
 
 static void circular_fifo_dump(const struct circular_fifo_s *fifo,
-			       ssize_t * vals)
+			       ssize_t *vals)
 {
 	ssize_t i;
 	ssize_t j;
@@ -73,7 +73,7 @@ static int cons_it_copy(excit_t ddst, const excit_t dsrc)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_size(const excit_t data, ssize_t * size)
+static int cons_it_size(const excit_t data, ssize_t *size)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
 	ssize_t tmp_size = 0;
@@ -85,7 +85,7 @@ static int cons_it_size(const excit_t data, ssize_t * size)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_split(const excit_t data, ssize_t n, excit_t * results)
+static int cons_it_split(const excit_t data, ssize_t n, excit_t *results)
 {
 	ssize_t size;
 	int err = cons_it_size(data, &size);
@@ -136,7 +136,7 @@ error1:
 	return err;
 }
 
-static int cons_it_nth(const excit_t data, ssize_t n, ssize_t * indexes)
+static int cons_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 {
 	ssize_t size;
 	int err = cons_it_size(data, &size);
@@ -158,8 +158,8 @@ static int cons_it_nth(const excit_t data, ssize_t n, ssize_t * indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_rank(const excit_t data, const ssize_t * indexes,
-			ssize_t * n)
+static int cons_it_rank(const excit_t data, const ssize_t *indexes,
+			ssize_t *n)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
 	ssize_t inner_n, inner_n_tmp;
@@ -182,7 +182,7 @@ static int cons_it_rank(const excit_t data, const ssize_t * indexes,
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_pos(const excit_t data, ssize_t * n)
+static int cons_it_pos(const excit_t data, ssize_t *n)
 {
 	ssize_t inner_n;
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
@@ -195,7 +195,7 @@ static int cons_it_pos(const excit_t data, ssize_t * n)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_peek(const excit_t data, ssize_t * indexes)
+static int cons_it_peek(const excit_t data, ssize_t *indexes)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
 	int err;
@@ -212,7 +212,7 @@ static int cons_it_peek(const excit_t data, ssize_t * indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_next(excit_t data, ssize_t * indexes)
+static int cons_it_next(excit_t data, ssize_t *indexes)
 {
 	struct cons_it_s *it = (struct cons_it_s *)data->data;
 	int err;

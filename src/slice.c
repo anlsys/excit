@@ -35,7 +35,7 @@ static int slice_it_copy(excit_t dst, const excit_t src)
 	return EXCIT_SUCCESS;
 }
 
-static int slice_it_next(excit_t data, ssize_t * indexes)
+static int slice_it_next(excit_t data, ssize_t *indexes)
 {
 	struct slice_it_s *it = (struct slice_it_s *)data->data;
 	ssize_t n;
@@ -46,7 +46,7 @@ static int slice_it_next(excit_t data, ssize_t * indexes)
 	return excit_nth(it->src, n, indexes);
 }
 
-static int slice_it_peek(const excit_t data, ssize_t * indexes)
+static int slice_it_peek(const excit_t data, ssize_t *indexes)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 	ssize_t n;
@@ -57,7 +57,7 @@ static int slice_it_peek(const excit_t data, ssize_t * indexes)
 	return excit_nth(it->src, n, indexes);
 }
 
-static int slice_it_size(const excit_t data, ssize_t * size)
+static int slice_it_size(const excit_t data, ssize_t *size)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 
@@ -71,7 +71,7 @@ static int slice_it_rewind(excit_t data)
 	return excit_rewind(it->indexer);
 }
 
-static int slice_it_nth(const excit_t data, ssize_t n, ssize_t * indexes)
+static int slice_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 	ssize_t p;
@@ -82,8 +82,8 @@ static int slice_it_nth(const excit_t data, ssize_t n, ssize_t * indexes)
 	return excit_nth(it->src, p, indexes);
 }
 
-static int slice_it_rank(const excit_t data, const ssize_t * indexes,
-			 ssize_t * n)
+static int slice_it_rank(const excit_t data, const ssize_t *indexes,
+			 ssize_t *n)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 	ssize_t inner_n;
@@ -94,14 +94,14 @@ static int slice_it_rank(const excit_t data, const ssize_t * indexes,
 	return excit_rank(it->indexer, &inner_n, n);
 }
 
-static int slice_it_pos(const excit_t data, ssize_t * n)
+static int slice_it_pos(const excit_t data, ssize_t *n)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 
 	return excit_pos(it->indexer, n);
 }
 
-static int slice_it_split(const excit_t data, ssize_t n, excit_t * results)
+static int slice_it_split(const excit_t data, ssize_t n, excit_t *results)
 {
 	const struct slice_it_s *it = (const struct slice_it_s *)data->data;
 	int err = excit_split(it->indexer, n, results);
