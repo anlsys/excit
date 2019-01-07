@@ -221,55 +221,6 @@ static int prod_it_next(excit_t data, ssize_t *indexes)
 	return prod_it_peeknext_helper(data, indexes, 1);
 }
 
-static int prod_it_split(const excit_t data, ssize_t n, excit_t *results)
-{
-	ssize_t size;
-	int err = prod_it_size(data, &size);
-
-	if (err)
-		return err;
-	if (size < n)
-		return -EXCIT_EDOM;
-	if (!results)
-		return EXCIT_SUCCESS;
-	excit_t range = excit_alloc(EXCIT_RANGE);
-
-	if (!range)
-		return -EXCIT_ENOMEM;
-	err = excit_range_init(range, 0, size - 1, 1);
-	if (err)
-		goto error1;
-	err = excit_split(range, n, results);
-	if (err)
-		goto error1;
-	for (int i = 0; i < n; i++) {
-		excit_t tmp, tmp2;
-
-		tmp = excit_dup(data);
-		if (!tmp)
-			goto error2;
-		tmp2 = results[i];
-		results[i] = excit_alloc(EXCIT_SLICE);
-		if (!results[i]) {
-			excit_free(tmp2);
-			goto error2;
-		}
-		err = excit_slice_init(results[i], tmp, tmp2);
-		if (err) {
-			excit_free(tmp2);
-			goto error2;
-		}
-	}
-	excit_free(range);
-	return EXCIT_SUCCESS;
-error2:
-	for (int i = 0; i < n; i++)
-		excit_free(results[i]);
-error1:
-	excit_free(range);
-	return err;
-}
-
 int excit_product_count(const excit_t it, ssize_t *count)
 {
 	if (!it || it->type != EXCIT_PRODUCT || !count)
@@ -362,7 +313,7 @@ struct excit_func_table_s excit_prod_func_table = {
 	prod_it_peek,
 	prod_it_size,
 	prod_it_rewind,
-	prod_it_split,
+	NULL,
 	prod_it_nth,
 	prod_it_rank,
 	prod_it_pos

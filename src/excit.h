@@ -332,6 +332,17 @@ int excit_cons_init(excit_t it, excit_t src, ssize_t n);
 int excit_repeat_init(excit_t it, excit_t src, ssize_t n);
 
 /*
+ * Splits a repeat iterator between repetitions.
+ * "it": a product iterator.
+ * "n": number of iterators desired.
+ * "results": an array of at least n excit_t, or NULL in which case no iterator
+ *            is created.
+ * Returns EXCIT_SUCCESS, -EXCIT_EDOM if the selected iterator is too small to
+ * be subdivised in the wanted number or an error code.
+ */
+int excit_repeat_split(const excit_t it, ssize_t n, excit_t *results);
+
+/*
  * Creates a two dimensional Hilbert space-filling curve iterator.
  * "it": an hilbert2d iterator.
  * "order": the iteration space is (2^order - 1)^2.
