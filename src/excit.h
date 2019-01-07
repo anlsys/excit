@@ -20,7 +20,7 @@ enum excit_type_e {
 /*
  * Returns the string representation of an iterator type.
  */
-const char * excit_type_name(enum excit_type_e type);
+const char *excit_type_name(enum excit_type_e type);
 
 /*
  * The different possible return codes of an excit function.
@@ -38,7 +38,7 @@ enum excit_error_e {
 /*
  * Returns the string representation of a return code.
  */
-const char * excit_error_name(enum excit_error_e err);
+const char *excit_error_name(enum excit_error_e err);
 
 /*
  * Opaque structure of an iterator
@@ -254,7 +254,8 @@ int excit_split(const excit_t it, ssize_t n, excit_t *results);
 /*
  * Gets the nth element of an iterator.
  * "it": an iterator.
- * "rank": rank of the element, comprised between 0 and the size of the iterator.
+ * "rank": rank of the element, comprised between 0 and the size of the
+ *         iterator.
  * "indexes": an array of indexes with a dimension corresponding to that of the
  *            iterator, no results is returned if NULL.
  * Returns EXCIT_SUCCESS or an error code.

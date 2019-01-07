@@ -1,34 +1,34 @@
 #include <stdlib.h>
 #include <excit.h>
 
-#define CASE(val) case val: return #val; break;
+#define CASE(val) case val: return #val; break
 
-const char * excit_type_name(enum excit_type_e type)
+const char *excit_type_name(enum excit_type_e type)
 {
 	switch (type) {
-		CASE(EXCIT_RANGE)
-		CASE(EXCIT_CONS)
-		CASE(EXCIT_REPEAT)
-		CASE(EXCIT_HILBERT2D)
-		CASE(EXCIT_PRODUCT)
-		CASE(EXCIT_SLICE)
-		CASE(EXCIT_USER)
-		CASE(EXCIT_TYPE_MAX)
+		CASE(EXCIT_RANGE);
+		CASE(EXCIT_CONS);
+		CASE(EXCIT_REPEAT);
+		CASE(EXCIT_HILBERT2D);
+		CASE(EXCIT_PRODUCT);
+		CASE(EXCIT_SLICE);
+		CASE(EXCIT_USER);
+		CASE(EXCIT_TYPE_MAX);
 	default:
 		return NULL;
 	}
 }
 
-const char * excit_error_name(enum excit_error_e err)
+const char *excit_error_name(enum excit_error_e err)
 {
 	switch (err) {
-		CASE(EXCIT_SUCCESS)
-		CASE(EXCIT_STOPIT)
-		CASE(EXCIT_ENOMEM)
-		CASE(EXCIT_EINVAL)
-		CASE(EXCIT_EDOM)
-		CASE(EXCIT_ENOTSUP)
-		CASE(EXCIT_ERROR_MAX)
+		CASE(EXCIT_SUCCESS);
+		CASE(EXCIT_STOPIT);
+		CASE(EXCIT_ENOMEM);
+		CASE(EXCIT_EINVAL);
+		CASE(EXCIT_EDOM);
+		CASE(EXCIT_ENOTSUP);
+		CASE(EXCIT_ERROR_MAX);
 	default:
 		return NULL;
 	}
@@ -396,6 +396,7 @@ static int prod_it_rank(const excit_t data, const ssize_t *indexes, ssize_t *n)
 
 	for (ssize_t i = 0; i < it->count; i++) {
 		int err = excit_rank(it->its[i], indexes + offset, &inner_n);
+
 		if (err)
 			return err;
 		err = excit_size(it->its[i], &subsize);
@@ -657,7 +658,7 @@ static void circular_fifo_add(struct circular_fifo_s *fifo, ssize_t elem)
 	fifo->buffer[fifo->end] = elem;
 }
 
-static void circular_fifo_dump(const struct circular_fifo_s *fifo, 
+static void circular_fifo_dump(const struct circular_fifo_s *fifo,
 			       ssize_t *vals)
 {
 	ssize_t i;
@@ -1102,6 +1103,7 @@ int excit_repeat_init(excit_t it, excit_t src, ssize_t n)
 	if (!it || it->type != EXCIT_REPEAT || !src || n <= 0)
 		return -EXCIT_EINVAL;
 	struct repeat_it_s *repeat_it = (struct repeat_it_s *) it->data;
+
 	excit_free(repeat_it->it);
 	it->dimension = src->dimension;
 	repeat_it->it = src;
@@ -1234,6 +1236,7 @@ static int hilbert2d_it_next(excit_t data, ssize_t *val)
 static int hilbert2d_it_size(const excit_t data, ssize_t *size)
 {
 	const struct hilbert2d_it_s *it = (struct hilbert2d_it_s *) data->data;
+
 	return excit_size(it->range_it, size);
 }
 
