@@ -431,6 +431,13 @@ int excit_tleaf_init(excit_t it,
 		     const ssize_t *arities,
 		     const enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy);
-	
+
+/*
+ * Split a tree at a given level.
+ * "it": a tleaf iterator.
+ * "level": The level to split.
+ * "n": The number of slices. n must divide the target level arity.
+ * "out": an array of n allocated tleaf iterators.
+ */	
 int tleaf_it_split_at_level(const excit_t it, const ssize_t level, const ssize_t n, excit_t *out);
 #endif
