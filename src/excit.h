@@ -198,6 +198,14 @@ excit_t excit_dup(const excit_t it);
  */
 void excit_free(excit_t it);
 
+
+/*
+ * Copy an iterator.
+ * "dst": the copy destination.
+ * "src": the iterator to copy
+ */
+int excit_copy(excit_t dst, const excit_t src);
+
 /*
  * Get the type of an iterator
  * "it": an iterator.
@@ -418,9 +426,9 @@ enum tleaf_it_policy_e {
  * Initialize a tleaf iterator by giving its depth, levels arity and iteration policy.
  * "it": a tleaf iterator
  * "depth": the total number of levels of the tree, including leaves
- * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. Leaves have no children, hence last level arity is ignored.
+ * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. Leaves have no children, hence last level arity is ignored. Arities are organized from root to leaves.
  * "policy": A policy for iteration on leaves.
- * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the order (from 0 to (depth-2)) in wich levels are walked 
+ * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the order (from 0 to (depth-2)) in wich levels are walked.
  *                when resolving indexes. Underneath, a product iterator of range iterator returns indexes on last levels upon iterator queries. This set of indexes is then 
  *                computed to a single leaf index. For instance TLEAF_POLICY_ROUND_ROBIN is obtained from walking from leaves to root whereas TLEAF_POLICY_SCATTER is 
  *                obtained from walking from root to leaves.
