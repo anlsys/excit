@@ -201,21 +201,6 @@ int excit_type(excit_t it, enum excit_type_e *type)
 	return EXCIT_SUCCESS;
 }
 
-int excit_copy(excit_t dst, const excit_t src)
-{
-	if (!dst                   ||
-	    !src                   ||
-	    !src->func_table       ||
-	    src->type != dst->type ||
-	    src->dimension != dst->dimension)
-		return -EXCIT_EINVAL;
-	if (!src->func_table->copy)
-		return -EXCIT_ENOTSUP;
-	dst->func_table = src->func_table;
-	dst->dimension  = src->dimension;
-	return src->func_table->copy(dst, src);
-}
-
 int excit_next(excit_t it, ssize_t *indexes)
 {
 	if (!it || !it->func_table)

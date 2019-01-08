@@ -198,14 +198,6 @@ excit_t excit_dup(const excit_t it);
  */
 void excit_free(excit_t it);
 
-
-/*
- * Copy an iterator.
- * "dst": the copy destination.
- * "src": the iterator to copy
- */
-int excit_copy(excit_t dst, const excit_t src);
-
 /*
  * Get the type of an iterator
  * "it": an iterator.
@@ -441,11 +433,11 @@ int excit_tleaf_init(excit_t it,
 		     const ssize_t *user_policy);
 
 /*
- * Split a tree at a given level.
+ * Split a tree at a given level. The behaviour is different from the generic function excit_split for the split might be sparse.
  * "it": a tleaf iterator.
  * "level": The level to split.
  * "n": The number of slices. n must divide the target level arity.
  * "out": an array of n allocated tleaf iterators.
- */	
-int tleaf_it_split_at_level(const excit_t it, const ssize_t level, const ssize_t n, excit_t *out);
+ */
+int tleaf_it_split(const excit_t it, const ssize_t level, const ssize_t n, excit_t *out);
 #endif
