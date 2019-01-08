@@ -299,8 +299,8 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_split_at_level(const excit_t it, const ssize_t level,
-			    const ssize_t n, excit_t *out)
+int tleaf_it_split(const excit_t it, const ssize_t level,
+		   const ssize_t n, excit_t *out)
 {
 	ssize_t i;
 
