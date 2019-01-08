@@ -84,57 +84,6 @@ static int cons_it_size(const excit_t data, ssize_t *size)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_split(const excit_t data, ssize_t n, excit_t *results)
-{
-	ssize_t size;
-	int err = cons_it_size(data, &size);
-
-	if (err)
-		return err;
-	if (size < n)
-		return -EXCIT_EDOM;
-	if (!results)
-		return EXCIT_SUCCESS;
-	excit_t range = excit_alloc(EXCIT_RANGE);
-
-	if (!range)
-		return -EXCIT_ENOMEM;
-	err = excit_range_init(range, 0, size - 1, 1);
-	if (err)
-		goto error1;
-	err = excit_split(range, n, results);
-	if (err)
-		goto error1;
-	int i;
-
-	for (i = 0; i < n; i++) {
-		excit_t tmp, tmp2;
-
-		tmp = excit_dup(data);
-		if (!tmp)
-			goto error2;
-		tmp2 = results[i];
-		results[i] = excit_alloc(EXCIT_SLICE);
-		if (!results[i]) {
-			excit_free(tmp2);
-			goto error2;
-		}
-		err = excit_slice_init(results[i], tmp, tmp2);
-		if (err) {
-			excit_free(tmp2);
-			goto error2;
-		}
-	}
-	excit_free(range);
-	return EXCIT_SUCCESS;
-error2:
-	for (; i >= 0; i--)
-		excit_free(results[i]);
-error1:
-	excit_free(range);
-	return err;
-}
-
 static int cons_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 {
 	ssize_t size;
@@ -295,7 +244,7 @@ struct excit_func_table_s excit_cons_func_table = {
 	cons_it_peek,
 	cons_it_size,
 	cons_it_rewind,
-	cons_it_split,
+	NULL,
 	cons_it_nth,
 	cons_it_rank,
 	cons_it_pos

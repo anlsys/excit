@@ -87,66 +87,66 @@ struct excit_func_table_s {
 	 * allocation, the inner data pointer will already be set.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*alloc) (excit_t it);
+	int (*alloc)(excit_t it);
 	/*
 	 * This function is called during excit_free. After this function is
 	 * called the iterator and the data will be freed.
 	 */
-	void (*free) (excit_t it);
+	void (*free)(excit_t it);
 	/*
 	 * This funciton is called during excit_dup. It is responsible for
 	 * duplicating the content of the inner data between src_it and dst_it.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*copy) (excit_t dst_it, const excit_t src_it);
+	int (*copy)(excit_t dst_it, const excit_t src_it);
 	/*
 	 * This function is responsible for implementing the next functionality
 	 * of the iterator.
 	 * Returns EXCIT_SUCCESS, EXCIT_STOPIT or an error code.
 	 */
-	int (*next) (excit_t it, ssize_t * indexes);
+	int (*next)(excit_t it, ssize_t *indexes);
 	/*
 	 * This function is responsible for implementing the peek functionality
 	 * of the iterator.
 	 * Returns EXCIT_SUCCESS, EXCIT_STOPIT or an error code.
 	 */
-	int (*peek) (const excit_t it, ssize_t * indexes);
+	int (*peek)(const excit_t it, ssize_t *indexes);
 	/*
 	 * This function is responsible for implementing the size functionality
 	 * of the iterator.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*size) (const excit_t it, ssize_t * size);
+	int (*size)(const excit_t it, ssize_t *size);
 	/*
 	 * This function is responsible for implementing the rewind
 	 * functionality of the iterator.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*rewind) (excit_t it);
+	int (*rewind)(excit_t it);
 	/*
 	 * This function is responsible for implementing the split
 	 * functionality of the iterator.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*split) (const excit_t it, ssize_t n, excit_t * results);
+	int (*split)(const excit_t it, ssize_t n, excit_t *results);
 	/*
 	 * This function is responsible for implementing the nth functionality
 	 * of the iterator.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*nth) (const excit_t it, ssize_t n, ssize_t * indexes);
+	int (*nth)(const excit_t it, ssize_t n, ssize_t *indexes);
 	/*
 	 * This function is responsible for implementing the rank functionality
 	 * of the iterator.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
-	int (*rank) (const excit_t it, const ssize_t * indexes, ssize_t * n);
+	int (*rank)(const excit_t it, const ssize_t *indexes, ssize_t *n);
 	/*
 	 * This function is responsible for implementing the pos functionality
 	 * of the iterator.
 	 * Returns EXCIT_SUCCESS, EXCIT_STOPIT or an error code.
 	 */
-	int (*pos) (const excit_t it, ssize_t * n);
+	int (*pos)(const excit_t it, ssize_t *n);
 };
 
 /*
@@ -213,7 +213,7 @@ int excit_type(excit_t it, enum excit_type_e *type);
  * "dimension": a pointer where the result will be written.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_dimension(excit_t it, ssize_t * dimension);
+int excit_dimension(excit_t it, ssize_t *dimension);
 
 /*
  * Gets the current element of an iterator and increments it.
@@ -223,7 +223,7 @@ int excit_dimension(excit_t it, ssize_t * dimension);
  * Returns EXCIT_SUCCESS if a valid element was retured or EXCIT_STOPIT if the
  * iterator is depleted or an error code.
  */
-int excit_next(excit_t it, ssize_t * indexes);
+int excit_next(excit_t it, ssize_t *indexes);
 
 /*
  * Gets the current element of an iterator.
@@ -233,7 +233,7 @@ int excit_next(excit_t it, ssize_t * indexes);
  * Returns EXCIT_SUCCESS if a valid element was retured or EXCIT_STOPIT if the
  * iterator is depleted or an error code.
  */
-int excit_peek(const excit_t it, ssize_t * indexes);
+int excit_peek(const excit_t it, ssize_t *indexes);
 
 /*
  * Rewinds an iterator to its initial state.
@@ -248,7 +248,7 @@ int excit_rewind(excit_t it);
  * "size": an pointer to the variable where the result will be stored.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_size(const excit_t it, ssize_t * size);
+int excit_size(const excit_t it, ssize_t *size);
 
 /*
  * Splits an iterator envenly into several suub iterators.
@@ -259,7 +259,7 @@ int excit_size(const excit_t it, ssize_t * size);
  * Returns EXCIT_SUCCESS, -EXCIT_EDOM if the source iterator is too small to be
  * subdivised in the wanted number or an error code.
  */
-int excit_split(const excit_t it, ssize_t n, excit_t * results);
+int excit_split(const excit_t it, ssize_t n, excit_t *results);
 
 /*
  * Gets the nth element of an iterator.
@@ -270,7 +270,7 @@ int excit_split(const excit_t it, ssize_t n, excit_t * results);
  *            iterator, no results is returned if NULL.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_nth(const excit_t it, ssize_t rank, ssize_t * indexes);
+int excit_nth(const excit_t it, ssize_t rank, ssize_t *indexes);
 
 /*
  * Gets the rank of an element of an iterator.
@@ -280,7 +280,7 @@ int excit_nth(const excit_t it, ssize_t rank, ssize_t * indexes);
  *         returned if NULL.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_rank(const excit_t it, const ssize_t * indexes, ssize_t * rank);
+int excit_rank(const excit_t it, const ssize_t *indexes, ssize_t *rank);
 
 /*
  * Gets the position of the iterator.
@@ -290,7 +290,7 @@ int excit_rank(const excit_t it, const ssize_t * indexes, ssize_t * rank);
  * Returns EXCIT_SUCCESS or EXCIT_STOPIT if the iterator is depleted or an error
  * code.
  */
-int excit_pos(const excit_t it, ssize_t * rank);
+int excit_pos(const excit_t it, ssize_t *rank);
 
 /*
  * Increments the iterator.
@@ -308,7 +308,7 @@ int excit_skip(excit_t it);
  *            iterator, no results is returned if NULL.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_cyclic_next(excit_t it, ssize_t * indexes, int *looped);
+int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped);
 
 /*
  * Initializes a range iterator to iterate from first to last (included) by sep.
@@ -338,6 +338,17 @@ int excit_cons_init(excit_t it, excit_t src, ssize_t n);
  * Returns EXCIT_SUCCESS or an error code.
  */
 int excit_repeat_init(excit_t it, excit_t src, ssize_t n);
+
+/*
+ * Splits a repeat iterator between repetitions.
+ * "it": a product iterator.
+ * "n": number of iterators desired.
+ * "results": an array of at least n excit_t, or NULL in which case no iterator
+ *            is created.
+ * Returns EXCIT_SUCCESS, -EXCIT_EDOM if the selected iterator is too small to
+ * be subdivised in the wanted number or an error code.
+ */
+int excit_repeat_split(const excit_t it, ssize_t n, excit_t *results);
 
 /*
  * Creates a two dimensional Hilbert space-filling curve iterator.
@@ -370,7 +381,7 @@ int excit_product_add_copy(excit_t it, excit_t added_it);
  * "count": a pointer to a variable where the result will be stored.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_product_count(const excit_t it, ssize_t * count);
+int excit_product_count(const excit_t it, ssize_t *count);
 
 /*
  * Splits a product iterator along the nth iterator.
@@ -384,7 +395,7 @@ int excit_product_count(const excit_t it, ssize_t * count);
  * be subdivised in the wanted number or an error code.
  */
 int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n,
-			    excit_t * results);
+			    excit_t *results);
 
 /*
  * Initializes a slice iterator by giving asrc iterator and an indexer iterator.
