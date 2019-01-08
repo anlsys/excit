@@ -1,392 +1,369 @@
+#include "dev/excit.h"
 #include "prod.h"
 
-struct excit_func_table_s excit_prod_func_table = {
-  prod_it_alloc,
-  prod_it_free,
-  prod_it_copy,
-  prod_it_next,
-  prod_it_peek,
-  prod_it_size,
-  prod_it_rewind,
-  prod_it_split,
-  prod_it_nth,
-  prod_it_rank,
-  prod_it_pos
-};
-
-#define EXCIT_DATA(data, it)				\
-  if(data == NULL) { return EXCIT_EINVAL; }		\
-  do{							\
-    int err = excit_get_data(data, (void**)(&it));	\
-    if(err != EXCIT_SUCCESS) { return err; }		\
-  } while(0);						\
-  if(it == NULL){ return EXCIT_EINVAL; }
-
-int prod_it_alloc(excit_t data)
+static int prod_it_alloc(excit_t data)
 {
-  struct prod_it_s *it;
-  EXCIT_DATA(data, it);
+	struct prod_it_s *it = (struct prod_it_s *)data->data;
 
-  it->count = 0;
-  it->its = NULL;
-  return EXCIT_SUCCESS;
+	it->count = 0;
+	it->its = NULL;
+	return EXCIT_SUCCESS;
 }
 
-void prod_it_free(excit_t data)
+static void prod_it_free(excit_t data)
 {
-  struct prod_it_s *it;
-  if(data == NULL) { return ; }
-  int err = excit_get_data(data, (void**)(&it));
-  if(err != EXCIT_SUCCESS) { return; }
+	struct prod_it_s *it = (struct prod_it_s *)data->data;
 
-  if (it->its) {
-    for (ssize_t i = 0; i < it->count; i++)
-      excit_free(it->its[i]);
-    free(it->its);
-  }
+	if (it->its) {
+		for (ssize_t i = 0; i < it->count; i++)
+			excit_free(it->its[i]);
+		free(it->its);
+	}
 }
 
-int prod_it_copy(excit_t dst, const excit_t src)
+static int prod_it_copy(excit_t dst, const excit_t src)
 {
-  const struct prod_it_s *it;
-  EXCIT_DATA(src, it);
-  struct prod_it_s *result;
-  EXCIT_DATA(dst, result);
+	const struct prod_it_s *it = (const struct prod_it_s *)src->data;
+	struct prod_it_s *result = (struct prod_it_s *)dst->data;
 
-  result->its = (excit_t *) malloc(it->count * sizeof(excit_t));
-  if (!result->its)
-    return -EXCIT_ENOMEM;
-  ssize_t i;
+	result->its = (excit_t *) malloc(it->count * sizeof(excit_t));
+	if (!result->its)
+		return -EXCIT_ENOMEM;
+	ssize_t i;
 
-  for (i = 0; i < it->count; i++) {
-    result->its[i] = excit_dup(it->its[i]);
-    if (!result->its[i]) {
-      i--;
-      goto error;
-    }
-  }
-  result->count = it->count;
-  return EXCIT_SUCCESS;
+	for (i = 0; i < it->count; i++) {
+		result->its[i] = excit_dup(it->its[i]);
+		if (!result->its[i]) {
+			i--;
+			goto error;
+		}
+	}
+	result->count = it->count;
+	return EXCIT_SUCCESS;
 error:
-  while (i >= 0) {
-    free(result->its[i]);
-    i--;
-  }
-  free(result->its);
-  return -EXCIT_ENOMEM;
+	while (i >= 0) {
+		free(result->its[i]);
+		i--;
+	}
+	free(result->its);
+	return -EXCIT_ENOMEM;
 }
 
-int prod_it_rewind(excit_t data)
+static int prod_it_rewind(excit_t data)
 {
-  struct prod_it_s *it;
-  EXCIT_DATA(data, it);
+	struct prod_it_s *it = (struct prod_it_s *)data->data;
 
-  for (ssize_t i = 0; i < it->count; i++) {
-    int err = excit_rewind(it->its[i]);
+	for (ssize_t i = 0; i < it->count; i++) {
+		int err = excit_rewind(it->its[i]);
 
-    if (err)
-      return err;
-  }
-  return EXCIT_SUCCESS;
+		if (err)
+			return err;
+	}
+	return EXCIT_SUCCESS;
 }
 
-int prod_it_size(const excit_t data, ssize_t *size)
+static int prod_it_size(const excit_t data, ssize_t *size)
 {
-  const struct prod_it_s *it;
-  EXCIT_DATA(data, it);
-  ssize_t tmp_size = 0;
+	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
+	ssize_t tmp_size = 0;
 
-  if (!size)
-    return -EXCIT_EINVAL;
-  if (it->count == 0)
-    *size = 0;
-  else {
-    *size = 1;
-    for (ssize_t i = 0; i < it->count; i++) {
-      int err = excit_size(it->its[i], &tmp_size);
+	if (!size)
+		return -EXCIT_EINVAL;
+	if (it->count == 0)
+		*size = 0;
+	else {
+		*size = 1;
+		for (ssize_t i = 0; i < it->count; i++) {
+			int err = excit_size(it->its[i], &tmp_size);
 
-      if (err) {
-	*size = 0;
-	return err;
-      }
-      *size *= tmp_size;
-    }
-  }
-  return EXCIT_SUCCESS;
+			if (err) {
+				*size = 0;
+				return err;
+			}
+			*size *= tmp_size;
+		}
+	}
+	return EXCIT_SUCCESS;
 }
 
-int prod_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
+static int prod_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 {
-  ssize_t size;
-  int err = prod_it_size(data, &size);
+	ssize_t size;
+	int err = prod_it_size(data, &size);
 
-  if (err)
-    return err;
-  if (n < 0 || n >= size)
-    return -EXCIT_EDOM;
-  const struct prod_it_s *it;
-  EXCIT_DATA(data, it);
+	if (err)
+		return err;
+	if (n < 0 || n >= size)
+		return -EXCIT_EDOM;
+	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
 
-  if (indexes) {
-    ssize_t subsize = 0;
-    ssize_t offset = excit_get_dimension(data);
+	if (indexes) {
+		ssize_t subsize = 0;
+		ssize_t offset = data->dimension;
 
-    for (ssize_t i = it->count - 1; i >= 0; i--) {
-      offset -= excit_get_dimension(it->its[i]);
-      err = excit_size(it->its[i], &subsize);
-      if (err)
-	return err;
-      err = excit_nth(it->its[i], n % subsize,
-		      indexes + offset);
-      if (err)
-	return err;
-      n /= subsize;
-    }
-  }
-  return EXCIT_SUCCESS;
+		for (ssize_t i = it->count - 1; i >= 0; i--) {
+			offset -= it->its[i]->dimension;
+			err = excit_size(it->its[i], &subsize);
+			if (err)
+				return err;
+			err = excit_nth(it->its[i], n % subsize,
+					indexes + offset);
+			if (err)
+				return err;
+			n /= subsize;
+		}
+	}
+	return EXCIT_SUCCESS;
 }
 
-int prod_it_rank(const excit_t data, const ssize_t *indexes, ssize_t *n)
+static int prod_it_rank(const excit_t data, const ssize_t *indexes,
+			ssize_t *n)
 {
-  const struct prod_it_s *it;
-  EXCIT_DATA(data, it);
+	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
 
-  if (it->count == 0)
-    return -EXCIT_EINVAL;
-  ssize_t offset = 0;
-  ssize_t product = 0;
-  ssize_t inner_n;
-  ssize_t subsize;
+	if (it->count == 0)
+		return -EXCIT_EINVAL;
+	ssize_t offset = 0;
+	ssize_t product = 0;
+	ssize_t inner_n;
+	ssize_t subsize;
 
-  for (ssize_t i = 0; i < it->count; i++) {
-    int err = excit_rank(it->its[i], indexes + offset, &inner_n);
-    if (err)
-      return err;
-    err = excit_size(it->its[i], &subsize);
-    if (err)
-      return err;
-    product *= subsize;
-    product += inner_n;
-    offset += excit_get_dimension(it->its[i]);
-  }
-  if (n)
-    *n = product;
-  return EXCIT_SUCCESS;
+	for (ssize_t i = 0; i < it->count; i++) {
+		int err = excit_rank(it->its[i], indexes + offset, &inner_n);
+		if (err)
+			return err;
+		err = excit_size(it->its[i], &subsize);
+		if (err)
+			return err;
+		product *= subsize;
+		product += inner_n;
+		offset += it->its[i]->dimension;
+	}
+	if (n)
+		*n = product;
+	return EXCIT_SUCCESS;
 }
 
-int prod_it_pos(const excit_t data, ssize_t *n)
+static int prod_it_pos(const excit_t data, ssize_t *n)
 {
-  const struct prod_it_s *it;
-  EXCIT_DATA(data, it);
+	const struct prod_it_s *it = (const struct prod_it_s *)data->data;
 
-  if (it->count == 0)
-    return -EXCIT_EINVAL;
-  ssize_t product = 0;
-  ssize_t inner_n;
-  ssize_t subsize;
+	if (it->count == 0)
+		return -EXCIT_EINVAL;
+	ssize_t product = 0;
+	ssize_t inner_n;
+	ssize_t subsize;
 
-  for (ssize_t i = 0; i < it->count; i++) {
-    int err = excit_pos(it->its[i], &inner_n);
+	for (ssize_t i = 0; i < it->count; i++) {
+		int err = excit_pos(it->its[i], &inner_n);
 
-    if (err)
-      return err;
-    err = excit_size(it->its[i], &subsize);
-    if (err)
-      return err;
-    product *= subsize;
-    product += inner_n;
-  }
-  if (n)
-    *n = product;
-  return EXCIT_SUCCESS;
+		if (err)
+			return err;
+		err = excit_size(it->its[i], &subsize);
+		if (err)
+			return err;
+		product *= subsize;
+		product += inner_n;
+	}
+	if (n)
+		*n = product;
+	return EXCIT_SUCCESS;
 }
 
 static inline int prod_it_peeknext_helper(excit_t data, ssize_t *indexes,
 					  int next)
 {
-  struct prod_it_s *it;
-  EXCIT_DATA(data, it);
-  int err;
-  int looped;
-  ssize_t i;
-  ssize_t *next_indexes;
-  ssize_t offset = excit_get_dimension(data);
+	struct prod_it_s *it = (struct prod_it_s *)data->data;
+	int err;
+	int looped;
+	ssize_t i;
+	ssize_t *next_indexes;
+	ssize_t offset = data->dimension;
 
-  if (it->count == 0)
-    return -EXCIT_EINVAL;
-  looped = next;
-  for (i = it->count - 1; i > 0; i--) {
-    if (indexes) {
-      offset -= excit_get_dimension(it->its[i]);
-      next_indexes = indexes + offset;
-    } else
-      next_indexes = NULL;
-    if (looped)
-      err = excit_cyclic_next(it->its[i], next_indexes,
-			      &looped);
-    else
-      err = excit_peek(it->its[i], next_indexes);
-    if (err)
-      return err;
-  }
-  if (indexes) {
-    offset -= excit_get_dimension(it->its[i]);
-    next_indexes = indexes + offset;
-  } else
-    next_indexes = NULL;
-  if (looped)
-    err = excit_next(it->its[0], next_indexes);
-  else
-    err = excit_peek(it->its[0], next_indexes);
-  if (err)
-    return err;
-  return EXCIT_SUCCESS;
-}
-
-int prod_it_peek(const excit_t data, ssize_t *indexes)
-{
-  return prod_it_peeknext_helper(data, indexes, 0);
-}
-
-int prod_it_next(excit_t data, ssize_t *indexes)
-{
-  return prod_it_peeknext_helper(data, indexes, 1);
-}
-
-int prod_it_split(const excit_t data, ssize_t n, excit_t *results)
-{
-  ssize_t size;
-  int err = prod_it_size(data, &size);
-
-  if (err)
-    return err;
-  if (size < n)
-    return -EXCIT_EDOM;
-  if (!results)
-    return EXCIT_SUCCESS;
-  excit_t range = excit_alloc(EXCIT_RANGE);
-
-  if (!range)
-    return -EXCIT_ENOMEM;
-  err = excit_range_init(range, 0, size - 1, 1);
-  if (err)
-    goto error1;
-  err = excit_split(range, n, results);
-  if (err)
-    goto error1;
-  for (int i = 0; i < n; i++) {
-    excit_t tmp, tmp2;
-
-    tmp = excit_dup(data);
-    if (!tmp)
-      goto error2;
-    tmp2 = results[i];
-    results[i] = excit_alloc(EXCIT_SLICE);
-    if (!results[i]) {
-      excit_free(tmp2);
-      goto error2;
-    }
-    err = excit_slice_init(results[i], tmp, tmp2);
-    if (err) {
-      excit_free(tmp2);
-      goto error2;
-    }
-  }
-  excit_free(range);
-  return EXCIT_SUCCESS;
-error2:
-  for (int i = 0; i < n; i++)
-    excit_free(results[i]);
-error1:
-  excit_free(range);
-  return err;
-}
-
-
-int excit_product_count(const excit_t it, ssize_t *count)
-{
-	if (!it || !count)
+	if (it->count == 0)
 		return -EXCIT_EINVAL;
-	struct prod_it_s *data;
-	EXCIT_DATA(it,data);
-	*count = data->count;
+	looped = next;
+	for (i = it->count - 1; i > 0; i--) {
+		if (indexes) {
+			offset -= it->its[i]->dimension;
+			next_indexes = indexes + offset;
+		} else
+			next_indexes = NULL;
+		if (looped)
+			err = excit_cyclic_next(it->its[i], next_indexes,
+						&looped);
+		else
+			err = excit_peek(it->its[i], next_indexes);
+		if (err)
+			return err;
+	}
+	if (indexes) {
+		offset -= it->its[i]->dimension;
+		next_indexes = indexes + offset;
+	} else
+		next_indexes = NULL;
+	if (looped)
+		err = excit_next(it->its[0], next_indexes);
+	else
+		err = excit_peek(it->its[0], next_indexes);
+	if (err)
+		return err;
 	return EXCIT_SUCCESS;
 }
 
-int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n, excit_t *results)
+static int prod_it_peek(const excit_t data, ssize_t *indexes)
 {
-    if (!it)
-      return -EXCIT_EINVAL;
-    if (n <= 0)
-      return -EXCIT_EDOM;
-    ssize_t count;
-    int err = excit_product_count(it, &count);
+	return prod_it_peeknext_helper(data, indexes, 0);
+}
 
-    if (err)
-      return err;
-    if (dim >= count)
-      return -EXCIT_EDOM;
-    struct prod_it_s *prod_it;
-    EXCIT_DATA(it, prod_it);
+static int prod_it_next(excit_t data, ssize_t *indexes)
+{
+	return prod_it_peeknext_helper(data, indexes, 1);
+}
 
-    err = excit_split(prod_it->its[dim], n, results);
-    if (err)
-      return err;
-    if (!results)
-      return EXCIT_SUCCESS;
-    for (int i = 0; i < n; i++) {
-      excit_t tmp = results[i];
+static int prod_it_split(const excit_t data, ssize_t n, excit_t *results)
+{
+	ssize_t size;
+	int err = prod_it_size(data, &size);
 
-      results[i] = excit_dup(it);
-      if (!tmp) {
-	excit_free(tmp);
-	err = -EXCIT_ENOMEM;
-	goto error;
-      }
-      struct prod_it_s *new_prod_it;
-      EXCIT_DATA(results[i], new_prod_it);
-      excit_free(new_prod_it->its[dim]);
-      new_prod_it->its[dim] = tmp;
-    }
-    return EXCIT_SUCCESS;
-  error:
-    for (int i = 0; i < n; i++)
-      excit_free(results[i]);
-    return err;
-  }
+	if (err)
+		return err;
+	if (size < n)
+		return -EXCIT_EDOM;
+	if (!results)
+		return EXCIT_SUCCESS;
+	excit_t range = excit_alloc(EXCIT_RANGE);
+
+	if (!range)
+		return -EXCIT_ENOMEM;
+	err = excit_range_init(range, 0, size - 1, 1);
+	if (err)
+		goto error1;
+	err = excit_split(range, n, results);
+	if (err)
+		goto error1;
+	for (int i = 0; i < n; i++) {
+		excit_t tmp, tmp2;
+
+		tmp = excit_dup(data);
+		if (!tmp)
+			goto error2;
+		tmp2 = results[i];
+		results[i] = excit_alloc(EXCIT_SLICE);
+		if (!results[i]) {
+			excit_free(tmp2);
+			goto error2;
+		}
+		err = excit_slice_init(results[i], tmp, tmp2);
+		if (err) {
+			excit_free(tmp2);
+			goto error2;
+		}
+	}
+	excit_free(range);
+	return EXCIT_SUCCESS;
+error2:
+	for (int i = 0; i < n; i++)
+		excit_free(results[i]);
+error1:
+	excit_free(range);
+	return err;
+}
+
+int excit_product_count(const excit_t it, ssize_t *count)
+{
+	if (!it || it->type != EXCIT_PRODUCT || !count)
+		return -EXCIT_EINVAL;
+	*count = ((struct prod_it_s *)it->data)->count;
+	return EXCIT_SUCCESS;
+}
+
+int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n,
+			    excit_t *results)
+{
+	if (!it || it->type != EXCIT_PRODUCT)
+		return -EXCIT_EINVAL;
+	if (n <= 0)
+		return -EXCIT_EDOM;
+	ssize_t count;
+	int err = excit_product_count(it, &count);
+
+	if (err)
+		return err;
+	if (dim >= count)
+		return -EXCIT_EDOM;
+	struct prod_it_s *prod_it = (struct prod_it_s *)it->data;
+
+	err = excit_split(prod_it->its[dim], n, results);
+	if (err)
+		return err;
+	if (!results)
+		return EXCIT_SUCCESS;
+	for (int i = 0; i < n; i++) {
+		excit_t tmp = results[i];
+
+		results[i] = excit_dup(it);
+		if (!tmp) {
+			excit_free(tmp);
+			err = -EXCIT_ENOMEM;
+			goto error;
+		}
+		struct prod_it_s *new_prod_it =
+		    (struct prod_it_s *)results[i]->data;
+		excit_free(new_prod_it->its[dim]);
+		new_prod_it->its[dim] = tmp;
+	}
+	return EXCIT_SUCCESS;
+error:
+	for (int i = 0; i < n; i++)
+		excit_free(results[i]);
+	return err;
+}
 
 int excit_product_add_copy(excit_t it, excit_t added_it)
 {
-  int err = 0;
-  excit_t copy = excit_dup(added_it);
+	int err = 0;
+	excit_t copy = excit_dup(added_it);
 
-  if (!copy)
-    return -EXCIT_EINVAL;
-  err = excit_product_add(it, copy);
-  if (err) {
-    excit_free(added_it);
-    return err;
-  }
-  return EXCIT_SUCCESS;
+	if (!copy)
+		return -EXCIT_EINVAL;
+	err = excit_product_add(it, copy);
+	if (err) {
+		excit_free(added_it);
+		return err;
+	}
+	return EXCIT_SUCCESS;
 }
 
 int excit_product_add(excit_t it, excit_t added_it)
 {
-  if (!it || !added_it)
-    return -EXCIT_EINVAL;
+	if (!it || it->type != EXCIT_PRODUCT || !it->data || !added_it)
+		return -EXCIT_EINVAL;
 
-  struct prod_it_s *prod_it;
-  EXCIT_DATA(it, prod_it);
-  ssize_t mew_count = prod_it->count + 1;
+	struct prod_it_s *prod_it = (struct prod_it_s *)it->data;
+	ssize_t mew_count = prod_it->count + 1;
 
-  excit_t *new_its =
-    (excit_t *) realloc(prod_it->its, mew_count * sizeof(excit_t));
-  if (!new_its)
-    return -EXCIT_ENOMEM;
-  prod_it->its = new_its;
-  prod_it->its[prod_it->count] = added_it;
-  prod_it->count = mew_count;
-  excit_set_dimension(it, excit_get_dimension(it)+excit_get_dimension(added_it));
-  return EXCIT_SUCCESS;
+	excit_t *new_its =
+	    (excit_t *) realloc(prod_it->its, mew_count * sizeof(excit_t));
+	if (!new_its)
+		return -EXCIT_ENOMEM;
+	prod_it->its = new_its;
+	prod_it->its[prod_it->count] = added_it;
+	prod_it->count = mew_count;
+	it->dimension += added_it->dimension;
+	return EXCIT_SUCCESS;
 }
 
+struct excit_func_table_s excit_prod_func_table = {
+	prod_it_alloc,
+	prod_it_free,
+	prod_it_copy,
+	prod_it_next,
+	prod_it_peek,
+	prod_it_size,
+	prod_it_rewind,
+	prod_it_split,
+	prod_it_nth,
+	prod_it_rank,
+	prod_it_pos
+};
