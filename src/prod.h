@@ -12,3 +12,4 @@ struct prod_it_s {
 extern struct excit_func_table_s excit_prod_func_table;
 
 #endif //EXCIT_PROD_H
+

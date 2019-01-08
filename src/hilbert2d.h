@@ -11,3 +11,4 @@ struct hilbert2d_it_s {
 extern struct excit_func_table_s excit_hilbert2d_func_table;
 
 #endif //EXCIT_HILBERT2D_H
+

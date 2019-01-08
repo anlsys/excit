@@ -15,6 +15,7 @@ enum excit_type_e {
 	EXCIT_HILBERT2D,	/*!< Hilbert space filing curve */
 	EXCIT_PRODUCT,		/*!< Iterator over the catesian product of iterators */
 	EXCIT_SLICE,		/*!< Iterator using another iterator to index a third */
+	EXCIT_TLEAF,		/*!< Iterator on tree leaves with all leaves at same depth */
 	EXCIT_USER,		/*!< User-defined iterator */
 	EXCIT_TYPE_MAX		/*!< Guard */
 };
@@ -396,8 +397,9 @@ int excit_slice_init(excit_t it, excit_t src, excit_t indexer);
 
 
 enum tleaf_it_policy_e {
-  ROUND_ROBIN, /* Iterate on tree leaves in a round-robin fashion */
-  SCATTER /* Iterate on tree leaves such spreading as much as possible */
+  TLEAF_POLICY_ROUND_ROBIN, /* Iterate on tree leaves in a round-robin fashion */
+  TLEAF_POLICY_SCATTER, /* Iterate on tree leaves such spreading as much as possible */
+  TLEAF_POLICY_USER /* Policy is a user defined policy */
 };
 
 
@@ -405,11 +407,19 @@ enum tleaf_it_policy_e {
  * Initialize a tleaf iterator by giving its depth, levels arity and iteration policy.
  * "it": a tleaf iterator
  * "depth": the total number of levels of the tree, including leaves
- * "arity": For each level, the number of children attached to a node. Leaves have no children, hence last level arity must be 0.
- * "iter_policy": A policy for iteration on leaves.
- * "offset": Offset on output. Usually 0.
- * "stride": Stride applied at eache level for indexing. Usually 1. If NULLm it is set to one at each level..
- */
-int excit_tleaf_init(excit_t it, const ssize_t depth, const ssize_t* arity, const enum tleaf_it_policy_e iter_policy, const ssize_t offset, const_ssize_t* strides);
+ * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. Leaves have no children, hence last level arity is ignored.
+ * "policy": A policy for iteration on leaves.
+ * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the order (from 0 to (depth-2)) in wich levels are walked 
+ *                when resolving indexes. Underneath, a product iterator of range iterator returns indexes on last levels upon iterator queries. This set of indexes is then 
+ *                computed to a single leaf index. For instance TLEAF_POLICY_ROUND_ROBIN is obtained from walking from leaves to root whereas TLEAF_POLICY_SCATTER is 
+ *                obtained from walking from root to leaves.
 
+ */
+int excit_tleaf_init(excit_t it,
+		     const ssize_t depth,
+		     const ssize_t *arities,
+		     const enum tleaf_it_policy_e policy,
+		     const ssize_t *user_policy);
+	
+int tleaf_it_split_at_level(const excit_t it, const ssize_t level, const ssize_t n, excit_t *out);
 #endif

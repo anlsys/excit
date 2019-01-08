@@ -171,7 +171,6 @@ error:
 	for (; i < n; i++)
 		excit_free(results[i]);
 	return err;
->>>>>>> master
 }
 
 int excit_range_init(excit_t it, ssize_t first, ssize_t last, ssize_t step)
@@ -182,7 +181,6 @@ int excit_range_init(excit_t it, ssize_t first, ssize_t last, ssize_t step)
 		return -EXCIT_EINVAL;
 	it->dimension = 1;
 	range_it = (struct range_it_s *)it->data;
->>>>>>> master
 	range_it->first = first;
 	range_it->v = first;
 	range_it->last = last;
@@ -203,3 +201,4 @@ struct excit_func_table_s excit_range_func_table = {
 	range_it_rank,
 	range_it_pos
 };
+

@@ -7,6 +7,7 @@
 #include "repeat.h"
 #include "hilbert2d.h"
 #include "range.h"
+#include "tleaf.h"
 
 #define CASE(val) case val: return #val; break
 
@@ -47,8 +48,8 @@ int excit_set_dimension(excit_t it, ssize_t dimension)
 {
   if (!it)
     return -EXCIT_EINVAL;
-  /* if (it->type != EXCIT_USER) */
-  /* 	return -EXCIT_ENOTSUP; */
+  if (it->type != EXCIT_USER)
+  	return -EXCIT_ENOTSUP;
   it->dimension = dimension;
   return EXCIT_SUCCESS;
 }
