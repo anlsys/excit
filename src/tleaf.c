@@ -31,8 +31,7 @@ static void tleaf_it_free(excit_t it)
 		free(data_it->order);
 	if (data_it->buf != NULL)
 		free(data_it->buf);
-	if (data_it->levels)
-		excit_free(data_it->levels);
+	excit_free(data_it->levels);
 }
 
 static int excit_tleaf_init_with_it(excit_t it,
@@ -203,18 +202,15 @@ static int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
 	}
 
 	/* dst is not initialized (anymore) */
-	excit_t levels = excit_alloc(EXCIT_PRODUCT);
+	excit_t levels = excit_dup(src->levels);
 
-	if (levels == NULL)
-		return -EXCIT_ENOMEM;
+	if (levels == NULL) {
+		err = -EXCIT_ENOMEM;
+		goto error;
+	}
 
-	err = src_it->func_table->copy(levels, src->levels);
-	if (err != EXCIT_SUCCESS)
-		goto error_with_levels;
-
-	err =
-		excit_tleaf_init_with_it(dst_it, src->depth + 1, src->arities,
-					 TLEAF_POLICY_USER, src->order, levels);
+	err = excit_tleaf_init_with_it(dst_it, src->depth + 1, src->arities,
+				       TLEAF_POLICY_USER, src->order, levels);
 	if (err != EXCIT_SUCCESS)
 		goto error_with_levels;
 
@@ -222,6 +218,7 @@ static int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
 
 error_with_levels:
 	excit_free(levels);
+error:
 	return err;
 }
 

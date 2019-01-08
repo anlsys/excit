@@ -44,7 +44,7 @@ void test_tleaf_iterator(void)
 	for (i = 0; i < TLEAF_NSPLIT; i++)
 		split[i] = excit_alloc(EXCIT_TLEAF);
 
-	err = tleaf_it_split_at_level(it, 2, TLEAF_NSPLIT, split);
+	err = tleaf_it_split(it, 2, TLEAF_NSPLIT, split);
 	assert(err == EXCIT_SUCCESS);
 
 	err = excit_rewind(split[1]);
