@@ -216,3 +216,4 @@ struct excit_func_table_s excit_hilbert2d_func_table = {
 	hilbert2d_it_rank,
 	hilbert2d_it_pos
 };
+

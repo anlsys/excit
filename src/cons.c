@@ -249,3 +249,4 @@ struct excit_func_table_s excit_cons_func_table = {
 	cons_it_rank,
 	cons_it_pos
 };
+

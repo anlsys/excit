@@ -12,3 +12,4 @@ struct slice_it_s {
 extern struct excit_func_table_s excit_slice_func_table;
 
 #endif //EXCIT_SLICE_H
+

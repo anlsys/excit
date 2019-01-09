@@ -7,6 +7,7 @@
 #include "repeat.h"
 #include "hilbert2d.h"
 #include "range.h"
+#include "tleaf.h"
 
 #define CASE(val) case val: return #val; break
 
@@ -116,6 +117,9 @@ excit_t excit_alloc(enum excit_type_e type)
 		break;
 	case EXCIT_SLICE:
 		ALLOC_EXCIT(slice);
+		break;
+	case EXCIT_TLEAF:
+		ALLOC_EXCIT(tleaf);
 		break;
 	default:
 		goto error;
@@ -352,3 +356,4 @@ int excit_skip(excit_t it)
 {
 	return excit_next(it, NULL);
 }
+

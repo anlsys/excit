@@ -5,6 +5,81 @@
 
 #define ES EXCIT_SUCCESS
 
+#define TLEAF_DEPTH 3
+#define TLEAF_NSPLIT 2
+
+void test_tleaf_iterator(void)
+{
+	excit_t it;
+	ssize_t depth = TLEAF_DEPTH+1;
+	ssize_t arities[(TLEAF_DEPTH)] = {3, 2, 4};
+	ssize_t i = 0, value;
+	ssize_t size = 1, it_size = 0;
+	int err = EXCIT_SUCCESS;
+
+	for (i = 0; i < depth-1; i++)
+		size *= arities[i];
+
+	it = excit_alloc(EXCIT_TLEAF);
+
+	err = excit_tleaf_init(it, depth, arities,
+			       TLEAF_POLICY_ROUND_ROBIN, NULL);
+	assert(err == EXCIT_SUCCESS);
+
+	err = excit_size(it, &it_size);
+	assert(err == EXCIT_SUCCESS);
+
+	assert(it_size == size);
+
+	for (i = 0; i < size; i++) {
+		err = excit_next(it, &value);
+		assert(err == EXCIT_SUCCESS);
+		assert(value == i);
+	}
+	err = excit_next(it, &value);
+	assert(err == EXCIT_STOPIT);
+
+	excit_t split[TLEAF_NSPLIT];
+
+	for (i = 0; i < TLEAF_NSPLIT; i++)
+		split[i] = excit_alloc(EXCIT_TLEAF);
+
+	err = tleaf_it_split(it, 2, TLEAF_NSPLIT, split);
+	assert(err == EXCIT_SUCCESS);
+
+	err = excit_rewind(split[1]);
+	assert(err == EXCIT_SUCCESS);
+
+	err = excit_size(split[1], &it_size);
+	assert(err == EXCIT_SUCCESS);
+
+	assert(it_size == size/TLEAF_NSPLIT);
+
+	err = excit_next(split[1], &value);
+	assert(err == EXCIT_SUCCESS);
+	assert(value == 2);
+	err = excit_next(split[1], &value);
+	assert(err == EXCIT_SUCCESS);
+	assert(value == 3);
+	err = excit_next(split[1], &value);
+	assert(err == EXCIT_SUCCESS);
+	assert(value == 6);
+	err = excit_next(split[1], &value);
+	assert(err == EXCIT_SUCCESS);
+	assert(value == 7);
+	err = excit_next(split[1], &value);
+	assert(err == EXCIT_SUCCESS);
+	assert(value == 10);
+	err = excit_next(split[1], &value);
+	assert(err == EXCIT_SUCCESS);
+	assert(value == 11);
+
+	for (i = 0; i < TLEAF_NSPLIT; i++)
+		excit_free(split[i]);
+
+	excit_free(it);
+}
+
 void test_range_iterator(void)
 {
 	excit_t it;
@@ -664,5 +739,6 @@ int main(int argc, char *argv[])
 	test_cons_iterator();
 	test_repeat_iterator();
 	test_hilbert2d_iterator();
+	test_tleaf_iterator();
 	return 0;
 }

@@ -13,3 +13,4 @@ struct range_it_s {
 extern struct excit_func_table_s excit_range_func_table;
 
 #endif //EXCIT_RANGE_H
+

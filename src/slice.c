@@ -176,3 +176,4 @@ int excit_slice_init(excit_t it, excit_t src, excit_t indexer)
 	it->dimension = src->dimension;
 	return EXCIT_SUCCESS;
 }
+

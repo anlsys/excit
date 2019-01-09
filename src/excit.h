@@ -15,6 +15,7 @@ enum excit_type_e {
 	EXCIT_HILBERT2D,	/*!< Hilbert space filing curve */
 	EXCIT_PRODUCT,		/*!< Iterator over the catesian product of iterators */
 	EXCIT_SLICE,		/*!< Iterator using another iterator to index a third */
+	EXCIT_TLEAF,		/*!< Iterator on tree leaves with all leaves at same depth */
 	EXCIT_USER,		/*!< User-defined iterator */
 	EXCIT_TYPE_MAX		/*!< Guard */
 };
@@ -52,16 +53,23 @@ typedef struct excit_s *excit_t;
  ******************************************************************************/
 
 /*
- * Sets the dimension of a user-defined iterator.
- * "it": a user-defined iterator.
+ * Sets the dimension of a (user-defined) iterator.
+ * "it": a (user-defined) iterator.
  * "dimension": the new dimension of the iterator.
  * Returns EXCIT_SUCCESS or an error code.
  */
 int excit_set_dimension(excit_t it, ssize_t dimension);
 
 /*
- * Gets the inner data pointer of a user-defined iterator.
- * "it": a user-defined iterator.
+ * Gets the dimension of an iterator.
+ * "it": the iterator.
+ * Returns the dimension or -1 if it is NULL.
+ */
+ssize_t excit_get_dimension(excit_t it);
+  
+/*
+ * Gets the inner data pointer of a (user-defined) iterator.
+ * "it": a (user-defined) iterator.
  * "data": a pointer to a pointer variable where the result will be written.
  * Returns EXCIT_SUCCESS or an error code.
  */
@@ -397,4 +405,37 @@ int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n,
  * Returns EXCIT_SUCCESS or an error code.
  */
 int excit_slice_init(excit_t it, excit_t src, excit_t indexer);
+
+enum tleaf_it_policy_e {
+  TLEAF_POLICY_ROUND_ROBIN, /* Iterate on tree leaves in a round-robin fashion */
+  TLEAF_POLICY_SCATTER, /* Iterate on tree leaves such spreading as much as possible */
+  TLEAF_POLICY_USER /* Policy is a user defined policy */
+};
+
+/*
+ * Initialize a tleaf iterator by giving its depth, levels arity and iteration policy.
+ * "it": a tleaf iterator
+ * "depth": the total number of levels of the tree, including leaves
+ * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. Leaves have no children, hence last level arity is ignored. Arities are organized from root to leaves.
+ * "policy": A policy for iteration on leaves.
+ * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the order (from 0 to (depth-2)) in wich levels are walked.
+ *                when resolving indexes. Underneath, a product iterator of range iterator returns indexes on last levels upon iterator queries. This set of indexes is then 
+ *                computed to a single leaf index. For instance TLEAF_POLICY_ROUND_ROBIN is obtained from walking from leaves to root whereas TLEAF_POLICY_SCATTER is 
+ *                obtained from walking from root to leaves.
+
+ */
+int excit_tleaf_init(excit_t it,
+		     const ssize_t depth,
+		     const ssize_t *arities,
+		     const enum tleaf_it_policy_e policy,
+		     const ssize_t *user_policy);
+
+/*
+ * Split a tree at a given level. The behaviour is different from the generic function excit_split for the split might be sparse.
+ * "it": a tleaf iterator.
+ * "level": The level to split.
+ * "n": The number of slices. n must divide the target level arity.
+ * "out": an array of n allocated tleaf iterators.
+ */
+int tleaf_it_split(const excit_t it, const ssize_t level, const ssize_t n, excit_t *out);
 #endif

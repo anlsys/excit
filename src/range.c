@@ -201,3 +201,4 @@ struct excit_func_table_s excit_range_func_table = {
 	range_it_rank,
 	range_it_pos
 };
+

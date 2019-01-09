@@ -13,3 +13,4 @@ struct repeat_it_s {
 extern struct excit_func_table_s excit_repeat_func_table;
 
 #endif //EXCIT_REPEAT_H
+
