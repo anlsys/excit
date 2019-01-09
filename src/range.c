@@ -144,7 +144,7 @@ static int range_it_split(const excit_t data, ssize_t n, excit_t *results)
 		return -EXCIT_EDOM;
 	if (!results)
 		return EXCIT_SUCCESS;
-	ssize_t new_last = it->last;
+	ssize_t new_last = it->first + (size - 1) * it->step;
 	ssize_t new_first;
 	int i;
 
