@@ -52,7 +52,6 @@ static int excit_tleaf_init_with_it(excit_t it,
 	/* Set order according to policy */
 	data_it->order = malloc(sizeof(*data_it->order) * data_it->depth);
 	if (data_it->order == NULL) {
-		perror("malloc");
 		err = -EXCIT_ENOMEM;
 		goto error;
 	}
@@ -78,7 +77,6 @@ static int excit_tleaf_init_with_it(excit_t it,
 	data_it->order_inverse =
 		malloc(sizeof(*data_it->order_inverse) * data_it->depth);
 	if (data_it->order_inverse == NULL) {
-		perror("malloc");
 		err = -EXCIT_ENOMEM;
 		goto error_with_order;
 	}
@@ -88,7 +86,6 @@ static int excit_tleaf_init_with_it(excit_t it,
 	/* Set levels arity */
 	data_it->arities = malloc(sizeof(*data_it->arities) * data_it->depth);
 	if (data_it->arities == NULL) {
-		perror("malloc");
 		err = -EXCIT_ENOMEM;
 		goto error_with_order_inverse;
 	}
@@ -98,7 +95,6 @@ static int excit_tleaf_init_with_it(excit_t it,
 	/* Set storage buffer for output of product iterator */
 	data_it->buf = malloc(sizeof(*data_it->buf) * data_it->depth);
 	if (data_it->buf == NULL) {
-		perror("malloc");
 		err = -EXCIT_ENOMEM;
 		goto error_with_arity;
 	}
