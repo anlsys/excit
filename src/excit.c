@@ -82,17 +82,17 @@ int excit_get_func_table(excit_t it, struct excit_func_table_s **func_table)
 
 /*--------------------------------------------------------------------*/
 
-#define ALLOC_EXCIT(op) {\
-	it = malloc(sizeof(struct excit_s) + sizeof(struct op## _it_s));\
-	if (!it)\
-		return NULL;\
-	it->data = (void *)((char *)it + sizeof(struct excit_s));\
-	if (!excit_ ##op## _func_table.alloc)\
-		goto error;\
-	it->func_table = &excit_ ##op## _func_table;\
-	it->dimension = 0;\
-	if (excit_ ##op## _func_table.alloc(it))\
-		goto error;\
+#define ALLOC_EXCIT(op) { \
+	it = malloc(sizeof(struct excit_s) + sizeof(struct op## _it_s)); \
+	if (!it) \
+		return NULL; \
+	it->data = (void *)((char *)it + sizeof(struct excit_s)); \
+	if (!excit_ ##op## _func_table.alloc) \
+		goto error; \
+	it->func_table = &excit_ ##op## _func_table; \
+	it->dimension = 0; \
+	if (excit_ ##op## _func_table.alloc(it)) \
+		goto error; \
 }
 
 excit_t excit_alloc(enum excit_type_e type)

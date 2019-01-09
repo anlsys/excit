@@ -255,7 +255,7 @@ int excit_size(const excit_t it, ssize_t *size);
  * "it": an iterator.
  * "n": number of iterators desired.
  * "results": an array of at least n excit_t, or NULL in which case no iterator
- / *            is created.
+ *            is created.
  * Returns EXCIT_SUCCESS, -EXCIT_EDOM if the source iterator is too small to be
  * subdivised in the wanted number or an error code.
  */
@@ -406,13 +406,11 @@ int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n,
  */
 int excit_slice_init(excit_t it, excit_t src, excit_t indexer);
 
-
 enum tleaf_it_policy_e {
   TLEAF_POLICY_ROUND_ROBIN, /* Iterate on tree leaves in a round-robin fashion */
   TLEAF_POLICY_SCATTER, /* Iterate on tree leaves such spreading as much as possible */
   TLEAF_POLICY_USER /* Policy is a user defined policy */
 };
-
 
 /*
  * Initialize a tleaf iterator by giving its depth, levels arity and iteration policy.
