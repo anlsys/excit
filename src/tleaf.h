@@ -8,8 +8,8 @@ struct tleaf_it_s {
 	ssize_t *arities;
 	ssize_t *order;
 	ssize_t *order_inverse;
-	excit_t levels;
 	ssize_t *buf;
+	excit_t levels;
 };
 
 extern struct excit_func_table_s excit_tleaf_func_table;

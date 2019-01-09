@@ -13,6 +13,7 @@ static int tleaf_it_alloc(excit_t it)
 	data_it->depth = 0;
 	data_it->arities = NULL;
 	data_it->order = NULL;
+	data_it->order_inverse = NULL;
 	data_it->buf = NULL;
 	data_it->levels = NULL;
 	return EXCIT_SUCCESS;
@@ -25,12 +26,10 @@ static void tleaf_it_free(excit_t it)
 
 	struct tleaf_it_s *data_it = it->data;
 
-	if (data_it->arities != NULL)
-		free(data_it->arities);
-	if (data_it->order != NULL)
-		free(data_it->order);
-	if (data_it->buf != NULL)
-		free(data_it->buf);
+	free(data_it->arities);
+	free(data_it->order);
+	free(data_it->order_inverse);
+	free(data_it->buf);
 	excit_free(data_it->levels);
 }
 
