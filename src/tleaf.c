@@ -21,9 +21,6 @@ static int tleaf_it_alloc(excit_t it)
 
 static void tleaf_it_free(excit_t it)
 {
-	if (it == NULL || it->data == NULL)
-		return;
-
 	struct tleaf_it_s *data_it = it->data;
 
 	free(data_it->arities);
@@ -39,11 +36,9 @@ static int excit_tleaf_init_with_it(excit_t it,
 				    const enum tleaf_it_policy_e policy,
 				    const ssize_t *user_policy, excit_t levels)
 {
-	int err = EXCIT_SUCCESS;
-
 	if (it == NULL || it->data == NULL)
 		return -EXCIT_EINVAL;
-
+	int err = EXCIT_SUCCESS;
 	struct tleaf_it_s *data_it = it->data;
 	ssize_t i;
 
@@ -160,9 +155,6 @@ int excit_tleaf_init(excit_t it,
 
 static int tleaf_it_size(const excit_t it, ssize_t *size)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
-
 	struct tleaf_it_s *data_it = it->data;
 
 	return excit_size(data_it->levels, size);
@@ -170,9 +162,6 @@ static int tleaf_it_size(const excit_t it, ssize_t *size)
 
 static int tleaf_it_rewind(excit_t it)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
-
 	struct tleaf_it_s *data_it = it->data;
 
 	return excit_rewind(data_it->levels);
@@ -180,9 +169,6 @@ static int tleaf_it_rewind(excit_t it)
 
 static int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
 {
-	if (src_it == NULL || dst_it == NULL)
-		return -EXCIT_EINVAL;
-
 	int err = EXCIT_SUCCESS;
 	struct tleaf_it_s *dst = dst_it->data;
 	struct tleaf_it_s *src = src_it->data;
@@ -219,9 +205,6 @@ error:
 
 static int tleaf_it_pos(const excit_t it, ssize_t *value)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
-
 	struct tleaf_it_s *data_it = it->data;
 
 	return excit_pos(data_it->levels, value);
@@ -241,8 +224,6 @@ static ssize_t tleaf_it_value(struct tleaf_it_s *it, const int inverse)
 
 int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_nth(data_it->levels, n, data_it->buf);
 
@@ -254,8 +235,6 @@ int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 
 int tleaf_it_peek(const excit_t it, ssize_t *value)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_peek(data_it->levels, data_it->buf);
 
@@ -267,8 +246,6 @@ int tleaf_it_peek(const excit_t it, ssize_t *value)
 
 int tleaf_it_next(excit_t it, ssize_t *indexes)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_next(data_it->levels, data_it->buf);
 
@@ -280,8 +257,6 @@ int tleaf_it_next(excit_t it, ssize_t *indexes)
 
 int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_nth(data_it->levels, *indexes, data_it->buf);
 
