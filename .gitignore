@@ -47,6 +47,7 @@ stamp-h1
 /install-sh
 /missing
 /stamp-h1
+libexcit.pc
 
 # autotest
 tests/*.trs
