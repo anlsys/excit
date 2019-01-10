@@ -39,6 +39,7 @@ void test_alloc_init_cons(int window, excit_t sit)
 excit_t create_test_cons(int window, excit_t sit)
 {
 	excit_t it;
+
 	it = excit_alloc_test(EXCIT_CONS);
 	assert(excit_cons_init(it, excit_dup(sit), window) == ES);
 	return it;
@@ -54,19 +55,20 @@ void test_next_cons(int window, excit_t sit)
 	for (int i = 0; i < window; i++) {
 		new_sit[i] = excit_dup(sit);
 		assert(new_sit[i] != NULL);
-		for (int j = 0; j < i; j++) {
+		for (int j = 0; j < i; j++)
 			assert(excit_skip(new_sit[i]) == ES);
-		}
 	}
 
 	assert(excit_dimension(it, &dim) == ES);
 	assert(excit_dimension(sit, &sdim) == ES);
-	indexes1 = (ssize_t *)malloc(dim * sizeof(ssize_t));
-	indexes2 = (ssize_t *)malloc(dim * sizeof(ssize_t));
+	indexes1 = (ssize_t *) malloc(dim * sizeof(ssize_t));
+	indexes2 = (ssize_t *) malloc(dim * sizeof(ssize_t));
 
-	while (excit_next(new_sit[window - 1], indexes2 + (window - 1) * sdim) == ES) {
+	while (excit_next(new_sit[window - 1], indexes2 + (window - 1) * sdim)
+	       == ES) {
 		for (int i = 0; i < window - 1; i++) {
-			assert(excit_next(new_sit[i], indexes2 + i * sdim) == ES);
+			assert(excit_next(new_sit[i], indexes2 + i * sdim) ==
+			       ES);
 		}
 		assert(excit_next(it, indexes1) == ES);
 		assert(memcmp(indexes1, indexes2, dim * sizeof(ssize_t)) == 0);
@@ -88,10 +90,11 @@ void test_cons_iterator(int window, excit_t sit)
 	test_next_cons(window, sit);
 
 	int i = 0;
+
 	while (synthetic_tests[i]) {
 		excit_t it = create_test_cons(window, sit);
 
-		synthetic_tests[i](it);
+		synthetic_tests[i] (it);
 		excit_free(it);
 		i++;
 	}
@@ -114,6 +117,6 @@ int main(int argc, char *argv[])
 	excit_free(it1);
 	excit_free(it2);
 	excit_free(it3);
-	
+
 	return 0;
 }

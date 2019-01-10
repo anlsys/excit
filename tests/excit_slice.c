@@ -24,7 +24,8 @@ void test_alloc_init_slice(excit_t source, excit_t indexer)
 	assert(excit_dimension(it, &dim) == ES);
 	assert(dim == 0);
 
-	assert(excit_slice_init(it, excit_dup(source), excit_dup(indexer)) == ES);
+	assert(excit_slice_init(it, excit_dup(source), excit_dup(indexer)) ==
+	       ES);
 	assert(excit_dimension(it, &dim) == ES);
 	assert(excit_dimension(source, &expected_dim) == ES);
 	assert(dim == expected_dim);
@@ -40,7 +41,8 @@ excit_t create_test_slice(excit_t source, excit_t indexer)
 	excit_t it;
 
 	it = excit_alloc_test(EXCIT_SLICE);
-	assert(excit_slice_init(it, excit_dup(source), excit_dup(indexer)) == ES);
+	assert(excit_slice_init(it, excit_dup(source), excit_dup(indexer)) ==
+	       ES);
 	return it;
 }
 
@@ -53,9 +55,10 @@ void test_next_slice(excit_t source, excit_t indexer)
 	ssize_t *indexes1, *indexes2;
 	ssize_t index;
 	ssize_t dim;
+
 	assert(excit_dimension(source, &dim) == ES);
-	indexes1 = (ssize_t *)malloc(dim * sizeof(ssize_t));
-	indexes2 = (ssize_t *)malloc(dim * sizeof(ssize_t));
+	indexes1 = (ssize_t *) malloc(dim * sizeof(ssize_t));
+	indexes2 = (ssize_t *) malloc(dim * sizeof(ssize_t));
 
 	while (excit_next(iit, &index) == ES) {
 		assert(excit_nth(source, index, indexes2) == ES);
@@ -77,10 +80,11 @@ void test_slice_iterator(excit_t source, excit_t indexer)
 	test_next_slice(source, indexer);
 
 	int i = 0;
+
 	while (synthetic_tests[i]) {
 		excit_t it = create_test_slice(source, indexer);
 
-		synthetic_tests[i](it);
+		synthetic_tests[i] (it);
 		excit_free(it);
 		i++;
 	}

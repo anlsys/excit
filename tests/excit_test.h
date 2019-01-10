@@ -4,8 +4,7 @@
 
 #define ES EXCIT_SUCCESS
 
-
 extern excit_t excit_alloc_test(enum excit_type_e type);
 
-extern void (*synthetic_tests[])(excit_t);
+extern void (*synthetic_tests[]) (excit_t);
 #endif

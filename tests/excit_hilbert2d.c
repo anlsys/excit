@@ -62,6 +62,7 @@ void test_alloc_init_hilbert2d(int order)
 excit_t create_test_hilbert2d(int order)
 {
 	excit_t it;
+
 	it = excit_alloc_test(EXCIT_HILBERT2D);
 	assert(excit_hilbert2d_init(it, order) == ES);
 	return it;
@@ -74,7 +75,7 @@ void test_next_hilbert2d(int order)
 
 	for (int i = 0; i < (1 << order) * (1 << order); i++) {
 		assert(excit_next(it, indexes1) == ES);
-		d2xy(1<<order, i, indexes2, indexes2 + 1);
+		d2xy(1 << order, i, indexes2, indexes2 + 1);
 		assert(indexes1[0] == indexes2[0]);
 		assert(indexes1[1] == indexes2[1]);
 	}
@@ -88,14 +89,15 @@ void test_hilbert2d_iterator(int order)
 	test_next_hilbert2d(order);
 
 	int i = 0;
+
 	while (synthetic_tests[i]) {
 		excit_t it = create_test_hilbert2d(order);
 
-		synthetic_tests[i](it);
+		synthetic_tests[i] (it);
 		excit_free(it);
 		i++;
 	}
-	
+
 }
 
 int main(int argc, char *argv[])

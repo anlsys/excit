@@ -4,7 +4,8 @@
 #include "excit.h"
 #include "excit_test.h"
 
-void test_alloc_init_range(ssize_t start, ssize_t stop, ssize_t step) {
+void test_alloc_init_range(ssize_t start, ssize_t stop, ssize_t step)
+{
 	excit_t it;
 	ssize_t dim;
 
@@ -18,7 +19,8 @@ void test_alloc_init_range(ssize_t start, ssize_t stop, ssize_t step) {
 	excit_free(it);
 }
 
-excit_t create_test_range(ssize_t start, ssize_t stop, ssize_t step) {
+excit_t create_test_range(ssize_t start, ssize_t stop, ssize_t step)
+{
 	excit_t it;
 
 	it = excit_alloc_test(EXCIT_RANGE);
@@ -39,8 +41,7 @@ void test_next_range(ssize_t start, ssize_t stop, ssize_t step)
 		for (int i = start; i >= stop; i += step) {
 			assert(excit_next(it, indexes) == ES);
 			assert(indexes[0] == i);
-		}
-	else
+	} else
 		for (int i = start; i <= stop; i += step) {
 			assert(excit_next(it, indexes) == ES);
 			assert(indexes[0] == i);
@@ -49,7 +50,6 @@ void test_next_range(ssize_t start, ssize_t stop, ssize_t step)
 	excit_free(it);
 }
 
-
 void test_range_iterator(ssize_t start, ssize_t stop, ssize_t step)
 {
 	test_alloc_init_range(start, stop, step);
@@ -57,10 +57,11 @@ void test_range_iterator(ssize_t start, ssize_t stop, ssize_t step)
 	test_next_range(start, stop, step);
 
 	int i = 0;
+
 	while (synthetic_tests[i]) {
 		excit_t it = create_test_range(start, stop, step);
 
-		synthetic_tests[i](it);
+		synthetic_tests[i] (it);
 		excit_free(it);
 		i++;
 	}

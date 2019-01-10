@@ -37,7 +37,7 @@ void test_alloc_init_prod(int count, excit_t *its)
 		expected_size *= size;
 		assert(excit_product_add_copy(it, its[i]) == ES);
 		assert(excit_product_count(it, &c) == ES);
-		assert(c == i+1);
+		assert(c == i + 1);
 		assert(excit_dimension(it, &dim) == ES);
 		assert(expected_dim == dim);
 		assert(excit_size(it, &size) == ES);
@@ -49,10 +49,10 @@ void test_alloc_init_prod(int count, excit_t *its)
 excit_t create_test_product(int count, excit_t *its)
 {
 	excit_t it;
+
 	it = excit_alloc_test(EXCIT_PRODUCT);
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; i < count; i++)
 		assert(excit_product_add_copy(it, its[i]) == ES);
-	}
 	return it;
 }
 
@@ -62,7 +62,9 @@ void test_next_product_helper(int count, excit_t it, excit_t *its,
 {
 	if (count == 0) {
 		assert(excit_next(it, indexes1) == ES);
-		assert(memcmp(indexes1, indexes2, (intptr_t)cindexes2 - (intptr_t)indexes2) == 0);
+		assert(memcmp
+		       (indexes1, indexes2,
+			(intptr_t) cindexes2 - (intptr_t) indexes2) == 0);
 	} else {
 		excit_t cit;
 		ssize_t dim;
@@ -70,8 +72,8 @@ void test_next_product_helper(int count, excit_t it, excit_t *its,
 		cit = excit_dup(*its);
 		assert(cit != NULL);
 
-		assert( excit_dimension(cit, &dim) == ES);
-		while(excit_next(cit, cindexes2) == ES) {
+		assert(excit_dimension(cit, &dim) == ES);
+		while (excit_next(cit, cindexes2) == ES) {
 			test_next_product_helper(count - 1, it, its + 1,
 						 indexes1, indexes2,
 						 cindexes2 + dim);
@@ -89,8 +91,8 @@ void test_next_product(int count, excit_t *its)
 	it = create_test_product(count, its);
 
 	assert(excit_dimension(it, &dim) == ES);
-	indexes1 = (ssize_t *)malloc(dim * sizeof(ssize_t));
-	indexes2 = (ssize_t *)malloc(dim * sizeof(ssize_t));
+	indexes1 = (ssize_t *) malloc(dim * sizeof(ssize_t));
+	indexes2 = (ssize_t *) malloc(dim * sizeof(ssize_t));
 
 	test_next_product_helper(count, it, its, indexes1, indexes2, indexes2);
 	assert(excit_next(it, NULL) == EXCIT_STOPIT);
@@ -108,10 +110,11 @@ void test_product_iterator(int count, excit_t *its)
 	test_next_product(count, its);
 
 	int i = 0;
+
 	while (synthetic_tests[i]) {
 		excit_t it = create_test_product(count, its);
 
-		synthetic_tests[i](it);
+		synthetic_tests[i] (it);
 		excit_free(it);
 		i++;
 	}
@@ -123,7 +126,7 @@ void test_product_split_dim(void)
 	excit_t its[3];
 	excit_t new_its[3];
 	ssize_t indexes[3];
-	
+
 	its[0] = create_test_range(0, 3, 1);
 	its[1] = create_test_range(1, -1, -1);
 	its[2] = create_test_range(-5, 5, 1);
@@ -213,13 +216,14 @@ void test_product_split_dim(void)
 	excit_free(its[0]);
 	excit_free(its[1]);
 	excit_free(its[2]);
-	
+
 	excit_free(it);
 }
 
 int main(int argc, char *argv[])
 {
 	excit_t its[4];
+
 	its[0] = create_test_range(0, 3, 1);
 	test_product_iterator(1, its);
 	its[1] = create_test_range(1, -1, -1);
