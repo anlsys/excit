@@ -276,6 +276,7 @@ void test_split(excit_t it) {
 	indexes1 = (ssize_t *)malloc(buff_dim);
 	indexes2 = (ssize_t *)malloc(buff_dim);
 
+	assert(excit_split(it, num_split, NULL) == ES);
 	assert(excit_split(it, num_split, its) == ES);
 	for(int i = 0; i < num_split; i++) {
 		while(excit_next(its[i], indexes2) == ES) {

@@ -68,6 +68,7 @@ void test_range_iterator(ssize_t start, ssize_t stop, ssize_t step)
 
 int main(int argc, char *argv[])
 {
+	test_range_iterator(4, 12, 3);
 	test_range_iterator(0, 3, 1);
 	test_range_iterator(0, 6, 2);
 	test_range_iterator(-15, 14, 2);

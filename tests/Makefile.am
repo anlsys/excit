@@ -11,8 +11,9 @@ excit_product_SOURCES = $(LIBHSOURCES) $(LIBCSOURCES) excit_product.c
 excit_repeat_SOURCES = $(LIBHSOURCES) $(LIBCSOURCES) excit_repeat.c
 excit_cons_SOURCES = $(LIBHSOURCES) $(LIBCSOURCES) excit_cons.c
 excit_hilbert2d_SOURCES = $(LIBHSOURCES) $(LIBCSOURCES) excit_hilbert2d.c
+excit_slice_SOURCES = $(LIBHSOURCES) $(LIBCSOURCES) excit_slice.c
 
-UNIT_TESTS = excit_range excit_product excit_repeat excit_cons excit_hilbert2d
+UNIT_TESTS = excit_range excit_product excit_repeat excit_cons excit_hilbert2d excit_slice
 
 # all tests
 check_PROGRAMS = $(UNIT_TESTS)
