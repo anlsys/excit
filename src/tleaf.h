@@ -6,10 +6,11 @@
 struct tleaf_it_s {
 	ssize_t depth;
 	ssize_t *arities;
-	ssize_t *order;
-	ssize_t *order_inverse;
 	ssize_t *buf;
+	ssize_t *order;
 	excit_t levels;
+	ssize_t *order_inverse;
+	excit_t levels_inverse;	
 };
 
 extern struct excit_func_table_s excit_tleaf_func_table;
