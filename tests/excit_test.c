@@ -277,11 +277,9 @@ void test_split(excit_t it) {
 	indexes2 = (ssize_t *)malloc(buff_dim);
 
 	assert(excit_split(it, num_split, its) == ES);
-	fprintf(stderr, "-----------------\n");
 	for(int i = 0; i < num_split; i++) {
 		while(excit_next(its[i], indexes2) == ES) {
 			assert(excit_next(it, indexes1) == ES);
-			fprintf(stderr, "%ld %ld\n", indexes1[0], indexes2[0]);
 			assert(memcmp(indexes1, indexes2, buff_dim) == 0);
 		}
 		excit_free(its[i]);

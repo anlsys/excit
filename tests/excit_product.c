@@ -76,6 +76,7 @@ void test_next_product_helper(int count, excit_t it, excit_t *its,
 						 indexes1, indexes2,
 						 cindexes2 + dim);
 		}
+		excit_free(cit);
 	}
 }
 
