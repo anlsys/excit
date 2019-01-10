@@ -118,7 +118,6 @@ void test_repeat_iterator(int repeat, excit_t sit)
 		excit_free(it);
 		i++;
 	}
-	
 }
 
 int main(int argc, char *argv[])
