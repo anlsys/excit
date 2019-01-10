@@ -42,11 +42,10 @@ static void tleaf_it_free(excit_t it)
 static int tleaf_it_size(const excit_t it, ssize_t *size)
 {
 	struct tleaf_it_s *data_it = it->data;
-	ssize_t i, s = 1;
+	int err = excit_size(data_it->levels, size);
 
-	for (i = 0; i < data_it->depth; i++)
-		s *= data_it->arities[i];
-	*size = data_it->depth ? s : 0;
+	if (err != EXCIT_SUCCESS)
+		return err;
 	return EXCIT_SUCCESS;
 }
 
@@ -395,6 +394,12 @@ int tleaf_it_split(const excit_t it, const ssize_t depth,
 		goto error_with_levels;
 
 	for (i = 0; i < n; i++) {
+		out[i] = excit_alloc(EXCIT_TLEAF);
+		if (out == NULL) {
+			err = -EXCIT_ENOMEM;
+			goto error_with_levels_inverse;
+		}
+
 		err = tleaf_init_with_it(out[i],
 					 data_it->depth + 1,
 					 data_it->arities,
