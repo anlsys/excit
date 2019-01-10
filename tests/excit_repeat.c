@@ -38,6 +38,7 @@ void test_alloc_init_repeat(int repeat, excit_t sit)
 excit_t create_test_repeat(int repeat, excit_t sit)
 {
 	excit_t it;
+
 	it = excit_alloc_test(EXCIT_REPEAT);
 	assert(excit_repeat_init(it, excit_dup(sit), repeat) == ES);
 	return it;
@@ -53,14 +54,15 @@ void test_next_repeat(int repeat, excit_t sit)
 	new_sit = excit_dup(sit);
 
 	assert(excit_dimension(it, &dim) == ES);
-	indexes1 = (ssize_t *)malloc(dim * sizeof(ssize_t));
-	indexes2 = (ssize_t *)malloc(dim * sizeof(ssize_t));
+	indexes1 = (ssize_t *) malloc(dim * sizeof(ssize_t));
+	indexes2 = (ssize_t *) malloc(dim * sizeof(ssize_t));
 
 	while (excit_next(new_sit, indexes1) == ES)
 		for (int i = 0; i < repeat; i++) {
 			assert(excit_next(it, indexes2) == ES);
-			assert(memcmp(indexes1, indexes2, dim * sizeof(ssize_t)) == 0);
-			
+			assert(memcmp(indexes1, indexes2, dim * sizeof(ssize_t))
+			       == 0);
+
 		}
 	assert(excit_next(it, indexes2) == EXCIT_STOPIT);
 
@@ -79,16 +81,18 @@ void test_repeat_split(int repeat, excit_t sit)
 	ssize_t dim;
 
 	assert(excit_dimension(it, &dim) == ES);
-	indexes1 = (ssize_t *)malloc(dim * sizeof(ssize_t));
-	indexes2 = (ssize_t *)malloc(dim * sizeof(ssize_t));
+	indexes1 = (ssize_t *) malloc(dim * sizeof(ssize_t));
+	indexes2 = (ssize_t *) malloc(dim * sizeof(ssize_t));
 
-	assert( excit_split(sit, 3, new_sits) == ES );
-	assert( excit_repeat_split(it, 3, new_its) == ES );
+	assert(excit_split(sit, 3, new_sits) == ES);
+	assert(excit_repeat_split(it, 3, new_its) == ES);
 	for (int i = 0; i < 3; i++) {
 		while (excit_next(new_sits[i], indexes1) == ES) {
 			for (int j = 0; j < repeat; j++) {
 				assert(excit_next(new_its[i], indexes2) == ES);
-				assert(memcmp(indexes1, indexes2, dim * sizeof(ssize_t)) == 0);
+				assert(memcmp
+				       (indexes1, indexes2,
+					dim * sizeof(ssize_t)) == 0);
 			}
 		}
 		assert(excit_next(new_its[i], indexes2) == EXCIT_STOPIT);
@@ -111,10 +115,11 @@ void test_repeat_iterator(int repeat, excit_t sit)
 	test_repeat_split(repeat, sit);
 
 	int i = 0;
+
 	while (synthetic_tests[i]) {
 		excit_t it = create_test_repeat(repeat, sit);
 
-		synthetic_tests[i](it);
+		synthetic_tests[i] (it);
 		excit_free(it);
 		i++;
 	}

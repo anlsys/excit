@@ -126,7 +126,7 @@ static int slice_it_split(const excit_t data, ssize_t n, excit_t *results)
 			err = -EXCIT_ENOMEM;
 			goto error;
 		}
-		err = excit_slice_init(results[i], tmp, tmp2);
+		err = excit_slice_init(results[i], tmp2, tmp);
 		if (err) {
 			excit_free(tmp);
 			excit_free(tmp2);
