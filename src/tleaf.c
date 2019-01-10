@@ -116,8 +116,8 @@ static ssize_t tleaf_it_value(struct tleaf_it_s *it)
 	ssize_t i, acc = 1, val = 0;
 
 	for (i = 0; i < it->depth; i++) {
-		val += acc * it->buf[i];
-		acc *= it->arities[it->order[i]];
+		val += acc * it->buf[it->order[it->depth - i - 1]];
+		acc *= it->arities[it->depth - i - 1];
 	}
 	return val;
 }
@@ -129,7 +129,8 @@ int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 
 	if (err != EXCIT_SUCCESS)
 		return err;
-	*indexes = tleaf_it_value(data_it);
+	if (indexes != NULL)
+		*indexes = tleaf_it_value(data_it);
 	return EXCIT_SUCCESS;
 }
 
@@ -140,7 +141,8 @@ int tleaf_it_peek(const excit_t it, ssize_t *value)
 
 	if (err != EXCIT_SUCCESS)
 		return err;
-	*value = tleaf_it_value(data_it);
+	if (value != NULL)
+		*value = tleaf_it_value(data_it);
 	return EXCIT_SUCCESS;
 }
 
@@ -151,24 +153,35 @@ int tleaf_it_next(excit_t it, ssize_t *indexes)
 
 	if (err != EXCIT_SUCCESS)
 		return err;
-	*indexes = tleaf_it_value(data_it);
+
+	if (indexes != NULL)
+		*indexes = tleaf_it_value(data_it);
 	return EXCIT_SUCCESS;
 }
 
 int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 {
+	ssize_t size;
+	int err;
+
+	err = tleaf_it_size(it, &size);
+	if (err != EXCIT_SUCCESS)
+		return err;
+
+	if (indexes == NULL || *indexes < 0 || *indexes >= size)
+		return -EXCIT_EINVAL;
+
 	struct tleaf_it_s *data_it = it->data;
 
-	int err = excit_nth(data_it->levels_inverse, *indexes, data_it->buf);
-
+	err = excit_nth(data_it->levels_inverse, *indexes, data_it->buf);
 	if (err != EXCIT_SUCCESS)
 		return err;
 
 	ssize_t i, acc = 1, val = 0;
 
-	for (i = 0; i < data_it->depth; i++) {
-		val += acc * data_it->buf[i];
-		acc *= data_it->arities[data_it->order_inverse[i]];
+	for (i = data_it->depth-1; i >= 0 ; i--) {
+		val += acc * data_it->buf[data_it->order_inverse[i]];
+		acc *= data_it->arities[i];
 	}
 
 	*n = val;
@@ -191,6 +204,7 @@ static int tleaf_add_level(excit_t levels, const ssize_t arity)
 	if (err != EXCIT_SUCCESS)
 		goto error;
 
+	return EXCIT_SUCCESS;
 error:
 	excit_free(level);
 	return err;
@@ -232,7 +246,7 @@ static int tleaf_init_with_it(excit_t it,
 		break;
 	default:
 		err = -EXCIT_EINVAL;
-		goto error_with_levels;
+		goto error_with_order;
 	}
 
 	/* Set order inverse */
@@ -272,7 +286,7 @@ static int tleaf_init_with_it(excit_t it,
 		for (i = 0; i < data_it->depth; i++) {
 			ssize_t l = data_it->order[i];
 
-			err = tleaf_add_level(levels,
+			err = tleaf_add_level(data_it->levels,
 					      data_it->arities[l]);
 			if (err != EXCIT_SUCCESS)
 				goto error_with_levels;
@@ -290,7 +304,7 @@ static int tleaf_init_with_it(excit_t it,
 		for (i = 0; i < data_it->depth; i++) {
 			ssize_t l = data_it->order_inverse[i];
 
-			err = tleaf_add_level(levels_inverse,
+			err = tleaf_add_level(data_it->levels_inverse,
 					      data_it->arities[l]);
 			if (err != EXCIT_SUCCESS)
 				goto error_with_levels_inverse;
@@ -362,7 +376,7 @@ int tleaf_it_split(const excit_t it, const ssize_t depth,
 
 	struct tleaf_it_s *data_it = it->data;
 
-	if (data_it->arities[data_it->order[depth]] % n != 0)
+	if (data_it->arities[depth] % n != 0)
 		return -EXCIT_EINVAL;
 
 	int err;

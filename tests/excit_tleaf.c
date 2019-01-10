@@ -6,44 +6,36 @@
 #include "excit.h"
 #include "excit_test.h"
 
-static const ssize_t depth = 4;
-static const ssize_t arities[4] = {4,8,2,4};
-
-static excit_t create_test_tleaf(const enum tleaf_it_policy_e policy, const ssize_t *user_policy)
+static excit_t create_test_tleaf(const ssize_t depth,
+				 const ssize_t *arities,
+				 const enum tleaf_it_policy_e policy,
+				 const ssize_t *user_policy)
 {
 	int err = EXCIT_SUCCESS;
 	excit_t it;	
         
-	it = excit_alloc_test(EXCIT_RANGE);
+	it = excit_alloc_test(EXCIT_TLEAF);
 	assert(it != NULL);
 
-	err = excit_tleaf_init(it, depth, arities, policy, user_policy);
+	err = excit_tleaf_init(it, depth+1, arities, policy, user_policy);
 	assert(err == EXCIT_SUCCESS);
-		
-	return it;
-}
 
-static inline ssize_t tleaf_size()
-{
-	ssize_t i, size=1;
+	ssize_t i, size = 1, it_size;
 	
 	for(i=0; i<depth; i++)
 		size *= arities[i];
-	return size;
-}
-
-static ssize_t tleaf_test_size(excit_t tleaf){
-	ssize_t i, it_size, size = tlesf_size();;
-
-	assert(excit_size(tleaf, &it_size) == EXCIT_SUCCESS);
+	assert(excit_size(it, &it_size) == EXCIT_SUCCESS);
 	assert(it_size == size);
+	
+	return it;
 }
 
 static void tleaf_test_round_robin_policy(excit_t tleaf){	
-	ssize_t i, size, value;
-
+	ssize_t i, value, size;
+	
+	assert(excit_size(tleaf, &size) == EXCIT_SUCCESS);
 	assert(excit_rewind(tleaf) == EXCIT_SUCCESS);
-	for(i = 0; i < tleaf_size(); i++){
+	for(i = 0; i < size; i++){
 		assert(excit_next(tleaf, &value) == EXCIT_SUCCESS);
 		assert(value == i);
 	}
@@ -51,9 +43,10 @@ static void tleaf_test_round_robin_policy(excit_t tleaf){
 }
 
 
-void tleaf_test_scatter_policy_no_split(excit_t tleaf){	
-	ssize_t i, j, r, n, c, value, val, size = tleaf_size();
+static void tleaf_test_scatter_policy_no_split(excit_t tleaf, const ssize_t depth, const ssize_t *arities){
+	ssize_t i, j, r, n, c, value, val, size;
 
+	assert(excit_size(tleaf, &size) == EXCIT_SUCCESS);
 	assert(excit_rewind(tleaf) == EXCIT_SUCCESS);	
 	for(i = 0; i < size; i++){
 		c = i;
@@ -71,22 +64,35 @@ void tleaf_test_scatter_policy_no_split(excit_t tleaf){
 	assert(excit_next(tleaf, &value) == EXCIT_STOPIT);
 }
 
-int main(int argc, char *argv[])
-{
-	excit_t rrobin = create_test_tleaf(TLEAF_POLICY_ROUND_ROBIN, NULL);
-	
+void run_tests(const ssize_t depth, const ssize_t *arities){
+	excit_t rrobin = create_test_tleaf(depth, arities, TLEAF_POLICY_ROUND_ROBIN, NULL);
+
 	assert(rrobin != NULL);
-	tleaf_test_size(rrobin);
 	tleaf_test_round_robin_policy(rrobin);
 	excit_free(rrobin);
-	
-	excit_t scatter = create_test_tleaf(TLEAF_POLICY_ROUND_ROBIN, NULL);
+
+	excit_t scatter = create_test_tleaf(depth, arities, TLEAF_POLICY_SCATTER, NULL);
 
 	assert(scatter != NULL);
-	tleaf_test_scatter_policy_no_split(scatter);
+	tleaf_test_scatter_policy_no_split(scatter, depth, arities);
 	excit_free(scatter);
 
-	return 0;
+	int i = 0;
+	while (synthetic_tests[i]) {
+		excit_t it = create_test_tleaf(depth, arities, TLEAF_POLICY_ROUND_ROBIN, NULL);
+
+		synthetic_tests[i](it);
+		excit_free(it);
+		i++;
+	}	
 }
 
+int main(int argc, char *argv[])
+{
+	const ssize_t depth = 4;
+        const ssize_t arities[4] = {4,8,2,4};
+
+	run_tests(depth, arities);
+	return 0;
+}
 
