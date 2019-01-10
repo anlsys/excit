@@ -43,6 +43,46 @@ static void tleaf_test_round_robin_policy(excit_t tleaf)
 	assert(excit_next(tleaf, &value) == EXCIT_STOPIT);
 }
 
+static void tleaf_test_round_robin_split(excit_t tleaf,
+					 const ssize_t depth,
+					 const ssize_t *arities)
+{
+	ssize_t i, value, size, cut_size;
+	ssize_t ncut = arities[0];
+
+	assert(excit_size(tleaf, &size) == EXCIT_SUCCESS);
+	cut_size = size / ncut;
+
+	excit_t *split = malloc(sizeof(*split) * ncut);
+
+	assert(split != NULL);
+
+	int err = tleaf_it_split(tleaf, 0, ncut, split);
+
+	assert(err == EXCIT_SUCCESS);
+
+	ssize_t *cut_sizes = malloc(sizeof(*cut_sizes) * ncut);
+
+	assert(cut_sizes != NULL);
+
+	for (i = 0; i < ncut; i++) {
+		assert(excit_size(split[i], cut_sizes + i) == EXCIT_SUCCESS);
+		assert(cut_sizes[i] == cut_size);
+	}
+
+	for (i = 0; i < size; i++) {
+		excit_t it = split[i*ncut/size];
+
+		assert(excit_next(it, &value) == EXCIT_SUCCESS);
+		assert(value == i);
+	}
+
+	for (i = 0; i < ncut; i++)
+		excit_free(split[i]);
+	free(split);
+	free(cut_sizes);
+}
+
 static void tleaf_test_scatter_policy_no_split(excit_t tleaf,
 					       const ssize_t depth,
 					       const ssize_t *arities)
@@ -73,6 +113,7 @@ void run_tests(const ssize_t depth, const ssize_t *arities)
 	    create_test_tleaf(depth, arities, TLEAF_POLICY_ROUND_ROBIN, NULL);
 
 	assert(rrobin != NULL);
+	tleaf_test_round_robin_split(rrobin, depth, arities);
 	tleaf_test_round_robin_policy(rrobin);
 	excit_free(rrobin);
 
