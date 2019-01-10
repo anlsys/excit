@@ -1,6 +1,9 @@
 #include "dev/excit.h"
 #include "hilbert2d.h"
 
+/* Helper functions from: https://en.wikipedia.org/wiki/Hilbert_curve */
+
+//rotate/flip a quadrant appropriately
 static void rot(ssize_t n, ssize_t *x, ssize_t *y, ssize_t rx, ssize_t ry)
 {
 	if (ry == 0) {
