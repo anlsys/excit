@@ -283,7 +283,7 @@ static int tleaf_init_with_it(excit_t it,
 		}
 
 		for (i = 0; i < data_it->depth; i++) {
-			ssize_t l = data_it->order[i];
+			ssize_t l = data_it->order_inverse[i];
 
 			err = tleaf_add_level(data_it->levels,
 					      data_it->arities[l]);
@@ -301,7 +301,7 @@ static int tleaf_init_with_it(excit_t it,
 			goto error_with_levels;
 		}
 		for (i = 0; i < data_it->depth; i++) {
-			ssize_t l = data_it->order_inverse[i];
+			ssize_t l = data_it->order[i];
 
 			err = tleaf_add_level(data_it->levels_inverse,
 					      data_it->arities[l]);
