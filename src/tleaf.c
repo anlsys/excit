@@ -6,6 +6,7 @@
 static int tleaf_init_with_it(excit_t it,
 			      const ssize_t depth,
 			      const ssize_t *arities,
+			      excit_t *indexes,
 			      const enum tleaf_it_policy_e policy,
 			      const ssize_t *user_policy,
 			      excit_t levels, excit_t levels_inverse);
@@ -87,7 +88,7 @@ static int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
 		goto error_with_levels;
 	}
 
-	err = tleaf_init_with_it(dst_it, src->depth + 1, src->arities,
+	err = tleaf_init_with_it(dst_it, src->depth + 1, src->arities, NULL,
 				 TLEAF_POLICY_USER, src->order, levels,
 				 levels_inverse);
 	if (err != EXCIT_SUCCESS)
@@ -178,7 +179,7 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 
 	ssize_t i, acc = 1, val = 0;
 
-	for (i = data_it->depth-1; i >= 0 ; i--) {
+	for (i = data_it->depth - 1; i >= 0; i--) {
 		val += acc * data_it->buf[data_it->order_inverse[i]];
 		acc *= data_it->arities[i];
 	}
@@ -187,31 +188,74 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-static int tleaf_add_level(excit_t levels, const ssize_t arity)
+int tleaf_it_make_levels(struct tleaf_it_s *tleaf, excit_t *indexes,
+			 ssize_t *order, excit_t *levels)
 {
-	excit_t level = excit_alloc(EXCIT_RANGE);
+	ssize_t i;
+	int err;
+	excit_t index, range, comp;
 
-	if (level == NULL)
+	*levels = excit_alloc(EXCIT_PRODUCT);
+	if (*levels == NULL)
 		return -EXCIT_ENOMEM;
 
-	int err = excit_range_init(level, 0, arity - 1, 1);
+	for (i = 0; i < tleaf->depth; i++) {
+		ssize_t l = order[i];
 
-	if (err != EXCIT_SUCCESS)
-		goto error;
+		index = indexes == NULL ? NULL : indexes[l];
 
-	err = excit_product_add(levels, level);
-	if (err != EXCIT_SUCCESS)
-		goto error;
+		range = excit_alloc(EXCIT_RANGE);
+
+		if (range == NULL) {
+			err = -EXCIT_ENOMEM;
+			goto error_with_levels;
+		}
+		err = excit_range_init(range, 0, tleaf->arities[l] - 1, 1);
+		if (err != EXCIT_SUCCESS)
+			goto error_with_range;
+
+		if (index != NULL) {
+			comp = excit_alloc(EXCIT_COMPOSITION);
+			if (comp == NULL) {
+				err = -EXCIT_ENOMEM;
+				goto error_with_range;
+			}
+			index = excit_dup(index);
+			if (index == NULL) {
+				err = -EXCIT_ENOMEM;
+				goto error_with_comp;
+			}
+			err = excit_composition_init(comp, range, index);
+			if (err != EXCIT_SUCCESS)
+				goto error_with_index;
+			err = excit_product_add(*levels, comp);
+			if (err != EXCIT_SUCCESS)
+				goto error_with_index;
+		} else {
+			err = excit_product_add(*levels, range);
+			if (err != EXCIT_SUCCESS)
+				goto error_with_range;
+		}
+	}
 
 	return EXCIT_SUCCESS;
-error:
-	excit_free(level);
+
+error_with_index:
+	excit_free(index);
+error_with_comp:
+	excit_free(comp);
+error_with_range:
+	excit_free(range);
+error_with_levels:
+	excit_free(*levels);
+	*levels = NULL;
 	return err;
 }
 
 static int tleaf_init_with_it(excit_t it,
 			      const ssize_t depth,
 			      const ssize_t *arities,
+			      excit_t *indexes,
 			      const enum tleaf_it_policy_e policy,
 			      const ssize_t *user_policy,
 			      excit_t levels, excit_t levels_inverse)
@@ -275,48 +319,25 @@ static int tleaf_init_with_it(excit_t it,
 	}
 
 	/* Set product iterator if not provided */
-	if (levels == NULL) {
-		data_it->levels = excit_alloc(EXCIT_PRODUCT);
-		if (data_it->levels == NULL) {
-			err = -EXCIT_ENOMEM;
-			goto error_with_buf;
-		}
+	data_it->levels = levels;
+	data_it->levels_inverse = levels_inverse;
+	if (levels == NULL)
+		err =
+		    tleaf_it_make_levels(data_it, indexes, data_it->order,
+					 &(data_it->levels));
+	if (err != EXCIT_SUCCESS)
+		goto error_with_buf;
 
-		for (i = 0; i < data_it->depth; i++) {
-			ssize_t l = data_it->order[i];
-
-			err = tleaf_add_level(data_it->levels,
-					      data_it->arities[l]);
-			if (err != EXCIT_SUCCESS)
-				goto error_with_levels;
-		}
-	} else {
-		data_it->levels = levels;
-	}
-
-	if (levels_inverse == NULL) {
-		data_it->levels_inverse = excit_alloc(EXCIT_PRODUCT);
-		if (data_it->levels_inverse == NULL) {
-			err = -EXCIT_ENOMEM;
-			goto error_with_levels;
-		}
-		for (i = 0; i < data_it->depth; i++) {
-			ssize_t l = data_it->order_inverse[i];
-
-			err = tleaf_add_level(data_it->levels_inverse,
-					      data_it->arities[l]);
-			if (err != EXCIT_SUCCESS)
-				goto error_with_levels_inverse;
-		}
-	} else {
-		data_it->levels_inverse = levels_inverse;
-	}
+	if (levels_inverse == NULL)
+		err =
+		    tleaf_it_make_levels(data_it, indexes,
+					 data_it->order_inverse,
+					 &(data_it->levels_inverse));
+	if (err != EXCIT_SUCCESS)
+		goto error_with_levels;
 
 	return EXCIT_SUCCESS;
 
-error_with_levels_inverse:
-	excit_free(data_it->levels_inverse);
-	data_it->levels_inverse = NULL;
 error_with_levels:
 	excit_free(data_it->levels);
 	data_it->levels = NULL;
@@ -339,11 +360,12 @@ error:
 int excit_tleaf_init(excit_t it,
 		     const ssize_t depth,
 		     const ssize_t *arities,
+		     excit_t *indexes,
 		     const enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy)
 {
-	return tleaf_init_with_it(it, depth, arities, policy, user_policy,
-				  NULL, NULL);
+	return tleaf_init_with_it(it, depth, arities, indexes, policy,
+				  user_policy, NULL, NULL);
 }
 
 int tleaf_split_levels(excit_t levels, const ssize_t depth, const ssize_t n,
@@ -403,6 +425,7 @@ int tleaf_it_split(const excit_t it, const ssize_t depth,
 		err = tleaf_init_with_it(out[i],
 					 data_it->depth + 1,
 					 data_it->arities,
+					 NULL,
 					 TLEAF_POLICY_USER,
 					 data_it->order, levels[i],
 					 levels_inverse[i]);

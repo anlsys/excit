@@ -416,7 +416,11 @@ enum tleaf_it_policy_e {
  * Initialize a tleaf iterator by giving its depth, levels arity and iteration policy.
  * "it": a tleaf iterator
  * "depth": the total number of levels of the tree, including leaves
- * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. Leaves have no children, hence last level arity is ignored. Arities are organized from root to leaves.
+ * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. 
+ *          Leaves have no children. Arities are organized from root to leaves.
+ * "index": NULL or an array of depth excit_t to re-index levels. 
+ *          It is intended to prune node of certain levels while keeping index of the initial structure.
+ *          Ownership of index is not taken. The iterator allocates a copy of index and manage it internally.
  * "policy": A policy for iteration on leaves.
  * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the order (from 0 to (depth-2)) in wich levels are walked.
  *                when resolving indexes. Underneath, a product iterator of range iterator returns indexes on last levels upon iterator queries. This set of indexes is then 
@@ -427,6 +431,7 @@ enum tleaf_it_policy_e {
 int excit_tleaf_init(excit_t it,
 		     const ssize_t depth,
 		     const ssize_t *arities,
+		     excit_t       *index,
 		     const enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy);
 
