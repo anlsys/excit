@@ -510,7 +510,7 @@ enum tleaf_it_policy_e {
 int excit_tleaf_init(excit_t it,
 		     const ssize_t depth,
 		     const ssize_t *arities,
-		     excit_t       *index,
+		     const excit_t *index,
 		     const enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy);
 
