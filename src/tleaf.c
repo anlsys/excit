@@ -184,7 +184,8 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 		acc *= data_it->arities[i];
 	}
 
-	*n = val;
+	if (n != NULL)
+		*n = val;
 	return EXCIT_SUCCESS;
 }
 
@@ -399,6 +400,8 @@ int tleaf_it_split(const excit_t it, const ssize_t depth,
 
 	if (data_it->arities[depth] % n != 0)
 		return -EXCIT_EINVAL;
+	if (out == NULL)
+		return EXCIT_SUCCESS;
 
 	int err;
 	excit_t *levels, *levels_inverse;
