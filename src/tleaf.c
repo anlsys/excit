@@ -6,7 +6,7 @@
 static int tleaf_init_with_it(excit_t it,
 			      const ssize_t depth,
 			      const ssize_t *arities,
-			      excit_t *indexes,
+			      const excit_t *indexes,
 			      const enum tleaf_it_policy_e policy,
 			      const ssize_t *user_policy,
 			      excit_t levels, excit_t levels_inverse);
@@ -189,7 +189,7 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_make_levels(struct tleaf_it_s *tleaf, excit_t *indexes,
+int tleaf_it_make_levels(struct tleaf_it_s *tleaf, const excit_t *indexes,
 			 ssize_t *order, excit_t *levels)
 {
 	ssize_t i;
@@ -256,7 +256,7 @@ error_with_levels:
 static int tleaf_init_with_it(excit_t it,
 			      const ssize_t depth,
 			      const ssize_t *arities,
-			      excit_t *indexes,
+			      const excit_t *indexes,
 			      const enum tleaf_it_policy_e policy,
 			      const ssize_t *user_policy,
 			      excit_t levels, excit_t levels_inverse)
@@ -361,7 +361,7 @@ error:
 int excit_tleaf_init(excit_t it,
 		     const ssize_t depth,
 		     const ssize_t *arities,
-		     excit_t *indexes,
+		     const excit_t *indexes,
 		     const enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy)
 {
