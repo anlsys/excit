@@ -181,7 +181,7 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 	ssize_t i, acc = 1, val = 0;
 
 	for (i = data_it->depth - 1; i >= 0; i--) {
-		val += acc * data_it->buf[data_it->order_inverse[i]];
+		val += acc * data_it->buf[data_it->order[i]];
 		acc *= data_it->arities[i];
 	}
 
