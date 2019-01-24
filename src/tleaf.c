@@ -116,7 +116,8 @@ static ssize_t tleaf_it_value(struct tleaf_it_s *it)
 	ssize_t i, acc = 1, val = 0;
 
 	for (i = 0; i < it->depth; i++) {
-		val += acc * it->buf[it->order[it->depth - i - 1]];
+		/* levels are stacked following order, then decode result backward order_inverse */
+		val += acc * it->buf[it->order_inverse[it->depth - i - 1]];
 		acc *= it->arities[it->depth - i - 1];
 	}
 	return val;
