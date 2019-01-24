@@ -7,6 +7,7 @@
 #include "repeat.h"
 #include "hilbert2d.h"
 #include "range.h"
+#include "index.h"
 #include "tleaf.h"
 
 #define CASE(val) case val: return #val; break
@@ -14,6 +15,7 @@
 const char *excit_type_name(enum excit_type_e type)
 {
 	switch (type) {
+		CASE(EXCIT_INDEX);
 		CASE(EXCIT_RANGE);
 		CASE(EXCIT_CONS);
 		CASE(EXCIT_REPEAT);
@@ -100,6 +102,9 @@ excit_t excit_alloc(enum excit_type_e type)
 	excit_t it = NULL;
 
 	switch (type) {
+	case EXCIT_INDEX:
+		ALLOC_EXCIT(index);
+		break;
 	case EXCIT_RANGE:
 		ALLOC_EXCIT(range);
 		break;

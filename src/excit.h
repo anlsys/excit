@@ -31,6 +31,11 @@
 enum excit_type_e {
 	/*!< Tag for invalid iterators */
 	EXCIT_INVALID,
+	/*!<
+	 * Iterator over an array of indexes.
+	 * If indexes are uniques, the iterator is made inversible (see excit_rank()).
+	 */
+	EXCIT_INDEX,
 	/*!< 
 	 * Iterator over a range of values.
 	 * See function excit_range_init for further details on iterator
@@ -382,6 +387,11 @@ int excit_skip(excit_t it);
  * Returns EXCIT_SUCCESS or an error code.
  */
 int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped);
+
+/*
+ * Initialize an index iterator with a set of indexes.
+ */
+int excit_index_init(excit_t it, const ssize_t  len, const ssize_t  *index);
 
 /*
  * Initializes a range iterator to iterate from first to last (included) by step.
