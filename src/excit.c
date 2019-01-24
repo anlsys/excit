@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "excit.h"
 #include "dev/excit.h"
-#include "slice.h"
+#include "composition.h"
 #include "prod.h"
 #include "cons.h"
 #include "repeat.h"
@@ -19,7 +19,7 @@ const char *excit_type_name(enum excit_type_e type)
 		CASE(EXCIT_REPEAT);
 		CASE(EXCIT_HILBERT2D);
 		CASE(EXCIT_PRODUCT);
-		CASE(EXCIT_SLICE);
+		CASE(EXCIT_COMPOSITION);
 		CASE(EXCIT_USER);
 		CASE(EXCIT_TYPE_MAX);
 	default:
@@ -115,8 +115,8 @@ excit_t excit_alloc(enum excit_type_e type)
 	case EXCIT_PRODUCT:
 		ALLOC_EXCIT(prod);
 		break;
-	case EXCIT_SLICE:
-		ALLOC_EXCIT(slice);
+	case EXCIT_COMPOSITION:
+		ALLOC_EXCIT(composition);
 		break;
 	case EXCIT_TLEAF:
 		ALLOC_EXCIT(tleaf);
@@ -270,12 +270,12 @@ int excit_split(const excit_t it, ssize_t n, excit_t *results)
 			if (!tmp)
 				goto error2;
 			tmp2 = results[i];
-			results[i] = excit_alloc(EXCIT_SLICE);
+			results[i] = excit_alloc(EXCIT_COMPOSITION);
 			if (!results[i]) {
 				excit_free(tmp2);
 				goto error2;
 			}
-			err = excit_slice_init(results[i], tmp, tmp2);
+			err = excit_composition_init(results[i], tmp, tmp2);
 			if (err) {
 				excit_free(tmp2);
 				goto error2;

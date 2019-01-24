@@ -4,20 +4,87 @@
 #include <stdlib.h>
 
 /*
- * The different types of iterator supported. All iterators use the same
- * integer type (ssize_t) for values.
+ * excit library provides an interface to build multi-dimensional iterators over 
+ * indexes.
+ * excit iterators walk an array of n elements indexed from 0 to n-1,
+ * and returns the aforementionned elements.
+ * excit return elements which type can only be an index of type ssize_t, 
+ * or an array of indexes (a multi-dimensional index) if the defined iterator 
+ * has several dimensions. ssize_t elements can fit pointers. Thus, it makes
+ * excit library the ideal tool box for indexing and ealking complex structures.
+ *
+ * excit implements its own interface with several iterators (see excit_type_e).
+ * For instance, excit implementation of product iterators enable to mix iterators 
+ * to create more complex ones. The library balanced tree "tleaf" iterator is built
+ * on top of product iterator.
+ *
+ * excit library uses the concept of "ownership". 
+ * An excit iterator has the ownership of its internal data, i.e it will free
+ * its owned data upon call to excit_free(). This ownership
+ * may be transferred to another iterator through a library function such as
+ * excit_cons_init() or excit_product_add().
+ * Thus ownership must be carefully watched to avoid memory leaks or double free.
+ *
+ * excit library provides a rank function to find the index given an element.
  */
+
 enum excit_type_e {
-	EXCIT_INVALID,		/*!< Tag for invalid iterators */
-	EXCIT_RANGE,		/*!< Iterator over a range of values */
-	EXCIT_CONS,		/*!< Sliding window iterator */
-	EXCIT_REPEAT,		/*!< Ierator that stutters a certain amount of times */
-	EXCIT_HILBERT2D,	/*!< Hilbert space filing curve */
-	EXCIT_PRODUCT,		/*!< Iterator over the catesian product of iterators */
-	EXCIT_SLICE,		/*!< Iterator using another iterator to index a third */
-	EXCIT_TLEAF,		/*!< Iterator on tree leaves with all leaves at same depth */
-	EXCIT_USER,		/*!< User-defined iterator */
-	EXCIT_TYPE_MAX		/*!< Guard */
+	/*!< Tag for invalid iterators */
+	EXCIT_INVALID,
+	/*!< 
+	 * Iterator over a range of values.
+	 * See function excit_range_init for further details on iterator
+	 * behaviour.
+	 */
+	EXCIT_RANGE,
+	/*!< 
+	 * Sliding window iterator
+	 * See function excit_cons_init for further details on iterator
+	 * behaviour.
+	 */
+	EXCIT_CONS,
+	/*!< 
+	 * Iterator that stutters a certain amount of times. 
+	 * Builds an iterator on top of another iterator repeating the latter elements.
+	 * See function excit_repeat_init() for further details on iterator
+	 * behaviour.
+	 */
+	EXCIT_REPEAT,
+	/*!< Hilbert space filing curve */
+	EXCIT_HILBERT2D,
+	/*!< 
+	 * Iterator over the catesian product of iterators.
+	 * The result iterator dimension is the sum of of input iterator dimensions.
+	 */
+	EXCIT_PRODUCT,
+	/*!< 
+	 * Iterator composing two iterators, 
+	 * i.e using an iterator to index another.
+	 * It is possible to chain composition iterators as long as 
+	 * input and output sets are compatible.
+	 * (Only dimension compatibility is not enforced by the library).
+	 * It is straightforward to build a composition iterator by composing two range iterators.
+	 */
+	EXCIT_COMPOSITION,
+	/*!< 
+	 * Iterator on balanced tree leaves.
+	 * The iterator walks an index of leaves according to a policy.
+	 * tleaf iterator has a special tleaf_it_split() for splitting the
+	 * tree at a specific level.
+	 * See tleaf_it_policy_e and excit_tleaf_init() for further explaination.
+	 */
+	EXCIT_TLEAF,
+	/*!< 
+	 * User-defined iterator 
+	 * excit library allow users to define their own iterator.
+	 * To do so, they need to populate the function table excit_func_table_s
+	 * with the routines to manipulate the aforementionned iterator. 
+	 * The outcome is that they will enjoy the functionnalities of the library
+	 * for mixing with other iterators.
+	 */
+	EXCIT_USER,
+	/*!< Guard */
+	EXCIT_TYPE_MAX
 };
 
 /*
@@ -96,6 +163,8 @@ struct excit_func_table_s {
 	/*
 	 * This funciton is called during excit_dup. It is responsible for
 	 * duplicating the content of the inner data between src_it and dst_it.
+	 * The internal state of the iterator must also be copied, i.e subsequent
+	 * calls to excit_next() must return the same results for both iterators.
 	 * Returns EXCIT_SUCCESS or an error code.
 	 */
 	int (*copy)(excit_t dst_it, const excit_t src_it);
@@ -185,7 +254,7 @@ excit_t excit_alloc_user(struct excit_func_table_s *func_table,
 			 size_t data_size);
 
 /*
- * Duplicates an iterator.
+ * Duplicates an iterator and keep its internal state.
  * "it": iterator to duplicate.
  * Returns an iterator that will need to be freed unless ownership is
  * transfered or NULL if an error occured.
@@ -262,7 +331,8 @@ int excit_size(const excit_t it, ssize_t *size);
 int excit_split(const excit_t it, ssize_t n, excit_t *results);
 
 /*
- * Gets the nth element of an iterator.
+ * Gets the nth element of an iterator. If an iterator has k dimensions, 
+ * then the nth element is an array of k nth elements along each dimension.
  * "it": an iterator.
  * "rank": rank of the element, comprised between 0 and the size of the
  *         iterator.
@@ -273,14 +343,17 @@ int excit_split(const excit_t it, ssize_t n, excit_t *results);
 int excit_nth(const excit_t it, ssize_t rank, ssize_t *indexes);
 
 /*
- * Gets the rank of an element of an iterator.
+ * Gets the rank of an element of an iterator. The rank of an element is its 
+ * iteration index, i.e excit_nth(excit_rank(element)) should return element.
+ * If the iterator has k dimensions, element is an array of the k values 
+ * composing element.
  * "it": an iterator.
  * "indexes": an array of indexes corresponding to the element of the iterator.
  * "rank": a pointer to a variable where the result will be stored, no result is
  *         returned if NULL.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_rank(const excit_t it, const ssize_t *indexes, ssize_t *rank);
+int excit_rank(const excit_t it, const ssize_t *element, ssize_t *rank);
 
 /*
  * Gets the position of the iterator.
@@ -311,7 +384,7 @@ int excit_skip(excit_t it);
 int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped);
 
 /*
- * Initializes a range iterator to iterate from first to last (included) by sep.
+ * Initializes a range iterator to iterate from first to last (included) by step.
  * "it": a range iterator.
  * "first": first value of the range.
  * "last": last value of the range.
@@ -398,13 +471,13 @@ int excit_product_split_dim(const excit_t it, ssize_t dim, ssize_t n,
 			    excit_t *results);
 
 /*
- * Initializes a slice iterator by giving asrc iterator and an indexer iterator.
- * "it": a slice iterator.
+ * Initializes a composition iterator by giving a src iterator and an indexer iterator.
+ * "it": a composition iterator.
  * "src": the iterator whom elements are to be returned.
  * "indexer": the iterator that will provide the rank of the elements to return.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_slice_init(excit_t it, excit_t src, excit_t indexer);
+int excit_composition_init(excit_t it, excit_t src, excit_t indexer);
 
 enum tleaf_it_policy_e {
   TLEAF_POLICY_ROUND_ROBIN, /* Iterate on tree leaves in a round-robin fashion */
@@ -414,28 +487,41 @@ enum tleaf_it_policy_e {
 
 /*
  * Initialize a tleaf iterator by giving its depth, levels arity and iteration policy.
+ * example building a user scatter policy: 
+ *         excit_tleaf_init(it, 4, {3, 2, 4}, TLEAF_POLICY_USER, {2, 1, 0});
+ * gives the output index: 
+ *         0,6,12,18,3,9,15,21,1,7,13,19,4,10,16,22,2,8,14,20,5,11,17,23.
  * "it": a tleaf iterator
  * "depth": the total number of levels of the tree, including leaves
- * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. Leaves have no children, hence last level arity is ignored. Arities are organized from root to leaves.
+ * "arity": An array  of size (depth-1). For each level, the number of children attached to a node. 
+ *          Leaves have no children. Arities are organized from root to leaves.
+ * "index": NULL or an array of depth excit_t to re-index levels. 
+ *          It is intended to prune node of certain levels while keeping index of the initial structure.
+ *          Ownership of index is not taken. The iterator allocates a copy of index and manage it internally.
  * "policy": A policy for iteration on leaves.
- * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the order (from 0 to (depth-2)) in wich levels are walked.
- *                when resolving indexes. Underneath, a product iterator of range iterator returns indexes on last levels upon iterator queries. This set of indexes is then 
- *                computed to a single leaf index. For instance TLEAF_POLICY_ROUND_ROBIN is obtained from walking from leaves to root whereas TLEAF_POLICY_SCATTER is 
+ * "user_policy": If policy is TLEAF_POLICY_USER, then this argument must be an array of size (depth-1) providing the 
+ *                order (from 0 to (depth-2)) in which levels are walked.
+ *                when resolving indexes. Underneath, a product iterator of range iterator returns indexes on last 
+ *                levels upon iterator queries. This set of indexes is then 
+ *                computed to a single leaf index. For instance TLEAF_POLICY_ROUND_ROBIN is obtained from walking 
+ *                from leaves to root whereas TLEAF_POLICY_SCATTER is 
  *                obtained from walking from root to leaves.
-
  */
 int excit_tleaf_init(excit_t it,
 		     const ssize_t depth,
 		     const ssize_t *arities,
+		     const excit_t *index,
 		     const enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy);
 
 /*
- * Split a tree at a given level. The behaviour is different from the generic function excit_split for the split might be sparse.
+ * Split a tree at a given level. The behaviour is different from the generic function excit_split for the 
+ * split might be sparse, depending on the tree level where the split occures and the number of parts.
  * "it": a tleaf iterator.
  * "level": The level to split.
- * "n": The number of slices. n must divide the target level arity.
+ * "n": The number of parts. n must divide the target level arity.
  * "out": an array of n allocated tleaf iterators.
  */
 int tleaf_it_split(const excit_t it, const ssize_t level, const ssize_t n, excit_t *out);
+
 #endif
