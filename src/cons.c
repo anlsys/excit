@@ -151,12 +151,15 @@ static int cons_it_peek(const excit_t data, ssize_t *indexes)
 	int n = it->n;
 
 	if (indexes) {
-		circular_fifo_dump(&it->fifo, indexes);
 		err = excit_peek(it->it, indexes + dim * (n - 1));
+		if (err)
+			return err;
+		circular_fifo_dump(&it->fifo, indexes);
 	} else
 		err = excit_peek(it->it, NULL);
 	if (err)
 		return err;
+	
 	return EXCIT_SUCCESS;
 }
 
@@ -167,9 +170,11 @@ static int cons_it_next(excit_t data, ssize_t *indexes)
 	int dim = it->it->dimension;
 	int n = it->n;
 
-	if (indexes) {
-		circular_fifo_dump(&it->fifo, indexes);
+	if (indexes) {		
 		err = excit_next(it->it, indexes + dim * (n - 1));
+		if (err)
+			return err;
+		circular_fifo_dump(&it->fifo, indexes);
 	} else
 		err = excit_next(it->it, NULL);
 	if (err)

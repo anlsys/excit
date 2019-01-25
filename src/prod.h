@@ -6,6 +6,7 @@
 
 struct prod_it_s {
 	ssize_t count;
+	ssize_t* buff;
 	excit_t *its;
 };
 

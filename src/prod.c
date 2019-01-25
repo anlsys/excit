@@ -1,3 +1,4 @@
+#include <string.h>
 #include "dev/excit.h"
 #include "prod.h"
 
@@ -7,6 +8,7 @@ static int prod_it_alloc(excit_t data)
 
 	it->count = 0;
 	it->its = NULL;
+	it->buff = NULL;
 	return EXCIT_SUCCESS;
 }
 
@@ -18,6 +20,7 @@ static void prod_it_free(excit_t data)
 		for (ssize_t i = 0; i < it->count; i++)
 			excit_free(it->its[i]);
 		free(it->its);
+		free(it->buff);
 	}
 }
 
@@ -29,6 +32,12 @@ static int prod_it_copy(excit_t dst, const excit_t src)
 	result->its = (excit_t *) malloc(it->count * sizeof(excit_t));
 	if (!result->its)
 		return -EXCIT_ENOMEM;
+	result->buff = (ssize_t *) malloc(src->dimension * sizeof(ssize_t));
+	if (!result->buff){
+		free(result->its);
+		return -EXCIT_ENOMEM;
+	}
+
 	ssize_t i;
 
 	for (i = 0; i < it->count; i++) {
@@ -184,11 +193,8 @@ static inline int prod_it_peeknext_helper(excit_t data, ssize_t *indexes,
 		return -EXCIT_EINVAL;
 	looped = next;
 	for (i = it->count - 1; i > 0; i--) {
-		if (indexes) {
-			offset -= it->its[i]->dimension;
-			next_indexes = indexes + offset;
-		} else
-			next_indexes = NULL;
+		offset -= it->its[i]->dimension;
+		next_indexes = it->buff + offset;
 		if (looped)
 			err = excit_cyclic_next(it->its[i], next_indexes,
 						&looped);
@@ -197,17 +203,17 @@ static inline int prod_it_peeknext_helper(excit_t data, ssize_t *indexes,
 		if (err)
 			return err;
 	}
-	if (indexes) {
-		offset -= it->its[i]->dimension;
-		next_indexes = indexes + offset;
-	} else
-		next_indexes = NULL;
+	offset -= it->its[i]->dimension;
+	next_indexes = it->buff + offset;
 	if (looped)
 		err = excit_next(it->its[0], next_indexes);
 	else
 		err = excit_peek(it->its[0], next_indexes);
 	if (err)
 		return err;
+
+	if(indexes)
+		memcpy(indexes, it->buff, data->dimension * sizeof(ssize_t)); 
 	return EXCIT_SUCCESS;
 }
 
@@ -288,6 +294,8 @@ int excit_product_add_copy(excit_t it, excit_t added_it)
 
 int excit_product_add(excit_t it, excit_t added_it)
 {
+	int err = EXCIT_SUCCESS;
+	
 	if (!it || it->type != EXCIT_PRODUCT || !it->data || !added_it)
 		return -EXCIT_EINVAL;
 
@@ -295,14 +303,30 @@ int excit_product_add(excit_t it, excit_t added_it)
 	ssize_t mew_count = prod_it->count + 1;
 
 	excit_t *new_its =
-	    (excit_t *) realloc(prod_it->its, mew_count * sizeof(excit_t));
+	    (excit_t *) realloc(prod_it->its, mew_count * sizeof(excit_t));	
+
 	if (!new_its)
 		return -EXCIT_ENOMEM;
+
+	ssize_t *new_buff =
+		realloc(prod_it->buff,
+			(added_it->dimension + it->dimension) * sizeof(ssize_t));
+
+	if (!new_buff){
+	        err = -EXCIT_ENOMEM;
+		goto exit_with_new_its;
+	}
+	
 	prod_it->its = new_its;
+	prod_it->buff = new_buff;
 	prod_it->its[prod_it->count] = added_it;
-	prod_it->count = mew_count;
+	prod_it->count = mew_count;	
 	it->dimension += added_it->dimension;
 	return EXCIT_SUCCESS;
+
+ exit_with_new_its:
+	free(new_its);
+	return err;
 }
 
 struct excit_func_table_s excit_prod_func_table = {
