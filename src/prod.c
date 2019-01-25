@@ -320,7 +320,7 @@ int excit_product_add(excit_t it, excit_t added_it)
 	prod_it->its = new_its;
 	prod_it->buff = new_buff;
 	prod_it->its[prod_it->count] = added_it;
-	prod_it->count = mew_count;	
+	prod_it->count = mew_count;
 	it->dimension += added_it->dimension;
 	return EXCIT_SUCCESS;
 
