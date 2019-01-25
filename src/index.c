@@ -19,7 +19,7 @@ static int comp_index_val(const void *a_ptr, const void *b_ptr)
 static struct index_s *make_index(const ssize_t len, const ssize_t *values)
 {
 	ssize_t i;
-	struct index_s *index = malloc((len + 1) * sizeof(*index));
+	struct index_s *index = malloc((len) * sizeof(*index));
 
 	if (index == NULL)
 		return NULL;
@@ -31,22 +31,17 @@ static struct index_s *make_index(const ssize_t len, const ssize_t *values)
 	for (i = 0; i < len; i++)
 		index[i].value = values[i];
 
-	/* STOPIT guard */
-	index[len].value = index[len - 1].value;
-	index[len].sorted_value = index[len - 1].sorted_value;
-	index[len].sorted_index = index[len - 1].sorted_index;
-
 	return index;
 }
 
 static inline struct index_s *copy_index(const ssize_t len,
 					 const struct index_s *x)
 {
-	struct index_s *index = malloc((len + 1) * sizeof(*index));
+	struct index_s *index = malloc((len) * sizeof(*index));
 
 	if (index == NULL)
 		return NULL;
-	memcpy(index, x, (len + 1) * sizeof(*x));
+	memcpy(index, x, (len) * sizeof(*x));
 	return index;
 }
 
@@ -161,10 +156,10 @@ static int index_it_peek(const excit_t it, ssize_t *value)
 {
 	struct index_it_s *data_it = it->data;
 
-	if (value)
-		*value = data_it->index[data_it->pos].value;
 	if (data_it->pos >= data_it->len)
 		return EXCIT_STOPIT;
+	if (value)
+		*value = data_it->index[data_it->pos].value;
 
 	return EXCIT_SUCCESS;
 }
@@ -173,10 +168,10 @@ static int index_it_next(excit_t it, ssize_t *indexes)
 {
 	struct index_it_s *data_it = it->data;
 
-	if (indexes)
-		*indexes = data_it->index[data_it->pos].value;
 	if (data_it->pos >= data_it->len)
 		return EXCIT_STOPIT;
+	if (indexes)
+		*indexes = data_it->index[data_it->pos].value;
 	data_it->pos++;
 	return EXCIT_SUCCESS;
 }
