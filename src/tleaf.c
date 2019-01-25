@@ -13,8 +13,6 @@ static int tleaf_init_with_it(excit_t it,
 
 static int tleaf_it_alloc(excit_t it)
 {
-	if (it == NULL || it->data == NULL)
-		return -EXCIT_EINVAL;
 	it->dimension = 1;
 	struct tleaf_it_s *data_it = it->data;
 
@@ -123,7 +121,7 @@ static ssize_t tleaf_it_value(struct tleaf_it_s *it)
 	return val;
 }
 
-int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
+static int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 {
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_nth(data_it->levels, n, data_it->buf);
@@ -135,7 +133,7 @@ int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_peek(const excit_t it, ssize_t *value)
+static int tleaf_it_peek(const excit_t it, ssize_t *value)
 {
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_peek(data_it->levels, data_it->buf);
@@ -147,7 +145,7 @@ int tleaf_it_peek(const excit_t it, ssize_t *value)
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_next(excit_t it, ssize_t *indexes)
+static int tleaf_it_next(excit_t it, ssize_t *indexes)
 {
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_next(data_it->levels, data_it->buf);
@@ -160,7 +158,7 @@ int tleaf_it_next(excit_t it, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
+static int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 {
 	ssize_t size;
 	int err;
@@ -190,7 +188,7 @@ int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_make_levels(struct tleaf_it_s *tleaf, const excit_t *indexes,
+static int tleaf_it_make_levels(struct tleaf_it_s *tleaf, const excit_t *indexes,
 			 ssize_t *order, excit_t *levels)
 {
 	ssize_t i;
@@ -370,7 +368,7 @@ int excit_tleaf_init(excit_t it,
 				  user_policy, NULL, NULL);
 }
 
-int tleaf_split_levels(excit_t levels, const ssize_t depth, const ssize_t n,
+static int tleaf_split_levels(excit_t levels, const ssize_t depth, const ssize_t n,
 		       excit_t **out)
 {
 	*out = malloc(sizeof(**out) * n);

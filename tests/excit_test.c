@@ -107,11 +107,12 @@ void test_peek(excit_t it1)
 
 	excit_dimension_test(it1, &dim1);
 
-	ssize_t *indexes1, *indexes2;
+	ssize_t *indexes1, *indexes2, *indexes3;
 	ssize_t buff_dim = dim1 * sizeof(ssize_t);
 
 	indexes1 = (ssize_t *) malloc(buff_dim);
 	indexes2 = (ssize_t *) malloc(buff_dim);
+	indexes3 = (ssize_t *) malloc(buff_dim);
 
 	while (excit_next(it1, indexes1) == ES) {
 		assert(excit_peek(it2, indexes2) == ES);
@@ -119,11 +120,17 @@ void test_peek(excit_t it1)
 		assert(excit_next(it2, indexes2) == ES);
 		assert(memcmp(indexes1, indexes2, buff_dim) == 0);
 	}
-	assert(excit_peek(it2, indexes2) == EXCIT_STOPIT);
-	assert(excit_next(it2, indexes2) == EXCIT_STOPIT);
 
+	memset(indexes2, 1, buff_dim);
+	memset(indexes3, 1, buff_dim);
+	assert(excit_peek(it2, indexes2) == EXCIT_STOPIT);
+	assert(! memcmp(indexes2, indexes3, buff_dim));
+	assert(excit_next(it2, indexes2) == EXCIT_STOPIT);
+	assert(! memcmp(indexes2, indexes3, buff_dim));
+	       
 	free(indexes1);
 	free(indexes2);
+	free(indexes3);
 	excit_free(it2);
 }
 
