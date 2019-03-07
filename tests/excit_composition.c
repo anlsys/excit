@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright 2019 UChicago Argonne, LLC.
+ * (c.f. AUTHORS, LICENSE)
+ *
+ * This file is part of the EXCIT project.
+>>>>>>> 043342c... [ci/quality] Add ci and fix license/authors.
+ * For more info, see https://xgitlab.cels.anl.gov/argo/excit
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+*******************************************************************************/
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
