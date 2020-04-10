@@ -410,7 +410,7 @@ int excit_cyclic_next(excit_t it, ssize_t *indexes, int *looped);
  * "index": an array of indexes.
  * Returns EXCIT_SUCCESS or an error code.
  */
-int excit_index_init(excit_t it, const ssize_t len, const ssize_t *index);
+int excit_index_init(excit_t it, ssize_t len, const ssize_t *index);
 
 /*
  * Initializes a range iterator to iterate from first to last (included) by step.
