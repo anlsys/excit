@@ -75,7 +75,7 @@ int excit_get_data(excit_t it, void **data)
 	return EXCIT_SUCCESS;
 }
 
-int excit_set_func_table(excit_t it, struct excit_func_table_s *func_table)
+int excit_set_func_table(excit_t it, const struct excit_func_table_s *func_table)
 {
 	if (!it)
 		return -EXCIT_EINVAL;
@@ -83,7 +83,7 @@ int excit_set_func_table(excit_t it, struct excit_func_table_s *func_table)
 	return EXCIT_SUCCESS;
 }
 
-int excit_get_func_table(excit_t it, struct excit_func_table_s **func_table)
+int excit_get_func_table(excit_t it, const struct excit_func_table_s **func_table)
 {
 	if (!it)
 		return -EXCIT_EINVAL;
@@ -145,7 +145,7 @@ error:
 	return NULL;
 }
 
-excit_t excit_alloc_user(struct excit_func_table_s *func_table,
+excit_t excit_alloc_user(const struct excit_func_table_s *func_table,
 			 size_t data_size)
 {
 	excit_t it;

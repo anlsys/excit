@@ -367,17 +367,17 @@ error:
 }
 
 int excit_tleaf_init(excit_t it,
-		     const ssize_t depth,
+		     ssize_t depth,
 		     const ssize_t *arities,
 		     const excit_t *indexes,
-		     const enum tleaf_it_policy_e policy,
+		     enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy)
 {
 	return tleaf_init_with_it(it, depth, arities, indexes, policy,
 				  user_policy, NULL, NULL);
 }
 
-static int tleaf_split_levels(excit_t levels, const ssize_t depth, const ssize_t n,
+static int tleaf_split_levels(excit_t levels, ssize_t depth, ssize_t n,
 		       excit_t **out)
 {
 	*out = malloc(sizeof(**out) * n);
