@@ -27,7 +27,7 @@ static void repeat_it_free(excit_t data)
 	excit_free(it->it);
 }
 
-static int repeat_it_copy(excit_t ddst, const excit_t dsrc)
+static int repeat_it_copy(excit_t ddst, const_excit_t dsrc)
 {
 	struct repeat_it_s *dst = (struct repeat_it_s *)ddst->data;
 	const struct repeat_it_s *src = (const struct repeat_it_s *)dsrc->data;
@@ -41,7 +41,7 @@ static int repeat_it_copy(excit_t ddst, const excit_t dsrc)
 	return EXCIT_SUCCESS;
 }
 
-static int repeat_it_peek(const excit_t data, ssize_t *indexes)
+static int repeat_it_peek(const_excit_t data, ssize_t *indexes)
 {
 	const struct repeat_it_s *it = (const struct repeat_it_s *)data->data;
 
@@ -59,7 +59,7 @@ static int repeat_it_next(excit_t data, ssize_t *indexes)
 	return excit_next(it->it, indexes);
 }
 
-static int repeat_it_size(const excit_t data, ssize_t *size)
+static int repeat_it_size(const_excit_t data, ssize_t *size)
 {
 	const struct repeat_it_s *it = (const struct repeat_it_s *)data->data;
 	int err = excit_size(it->it, size);
@@ -78,7 +78,7 @@ static int repeat_it_rewind(excit_t data)
 	return excit_rewind(it->it);
 }
 
-static int repeat_it_nth(const excit_t data, ssize_t n, ssize_t *val)
+static int repeat_it_nth(const_excit_t data, ssize_t n, ssize_t *val)
 {
 	ssize_t size;
 	int err = repeat_it_size(data, &size);
@@ -92,7 +92,7 @@ static int repeat_it_nth(const excit_t data, ssize_t n, ssize_t *val)
 	return excit_nth(it->it, n / it->n, val);
 }
 
-static int repeat_it_pos(const excit_t data, ssize_t *n)
+static int repeat_it_pos(const_excit_t data, ssize_t *n)
 {
 	ssize_t inner_n;
 	const struct repeat_it_s *it = (const struct repeat_it_s *)data->data;
@@ -132,7 +132,7 @@ int excit_repeat_init(excit_t it, excit_t src, ssize_t n)
 	return EXCIT_SUCCESS;
 }
 
-int excit_repeat_split(const excit_t data, ssize_t n, excit_t *results)
+int excit_repeat_split(const_excit_t data, ssize_t n, excit_t *results)
 {
 	const struct repeat_it_s *it = (const struct repeat_it_s *)data->data;
 	int err = excit_split(it->it, n, results);

@@ -25,7 +25,7 @@ static void range_it_free(excit_t data)
 {
 }
 
-static int range_it_copy(excit_t ddst, const excit_t dsrc)
+static int range_it_copy(excit_t ddst, const_excit_t dsrc)
 {
 	struct range_it_s *dst = (struct range_it_s *)ddst->data;
 	const struct range_it_s *src = (const struct range_it_s *)dsrc->data;
@@ -45,7 +45,7 @@ static int range_it_rewind(excit_t data)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_peek(const excit_t data, ssize_t *val)
+static int range_it_peek(const_excit_t data, ssize_t *val)
 {
 	struct range_it_s *it = (struct range_it_s *)data->data;
 
@@ -73,7 +73,7 @@ static int range_it_next(excit_t data, ssize_t *val)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_size(const excit_t data, ssize_t *size)
+static int range_it_size(const_excit_t data, ssize_t *size)
 {
 	const struct range_it_s *it = (struct range_it_s *)data->data;
 
@@ -92,7 +92,7 @@ static int range_it_size(const excit_t data, ssize_t *size)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_nth(const excit_t data, ssize_t n, ssize_t *val)
+static int range_it_nth(const_excit_t data, ssize_t n, ssize_t *val)
 {
 	ssize_t size;
 	int err = range_it_size(data, &size);
@@ -108,7 +108,7 @@ static int range_it_nth(const excit_t data, ssize_t n, ssize_t *val)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_rank(const excit_t data, const ssize_t *val, ssize_t *n)
+static int range_it_rank(const_excit_t data, const ssize_t *val, ssize_t *n)
 {
 	ssize_t size;
 	int err = range_it_size(data, &size);
@@ -125,7 +125,7 @@ static int range_it_rank(const excit_t data, const ssize_t *val, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_pos(const excit_t data, ssize_t *n)
+static int range_it_pos(const_excit_t data, ssize_t *n)
 {
 	ssize_t val;
 	int err = range_it_peek(data, &val);
@@ -139,7 +139,7 @@ static int range_it_pos(const excit_t data, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-static int range_it_split(const excit_t data, ssize_t n, excit_t *results)
+static int range_it_split(const_excit_t data, ssize_t n, excit_t *results)
 {
 	const struct range_it_s *it = (struct range_it_s *)data->data;
 	ssize_t size;

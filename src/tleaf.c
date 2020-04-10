@@ -13,10 +13,10 @@
 #include "tleaf.h"
 
 static int tleaf_init_with_it(excit_t it,
-			      const ssize_t depth,
+			      ssize_t depth,
 			      const ssize_t *arities,
-			      const excit_t *indexes,
-			      const enum tleaf_it_policy_e policy,
+			      excit_t *indexes,
+			      enum tleaf_it_policy_e policy,
 			      const ssize_t *user_policy,
 			      excit_t levels, excit_t levels_inverse);
 
@@ -47,7 +47,7 @@ static void tleaf_it_free(excit_t it)
 	excit_free(data_it->levels_inverse);
 }
 
-static int tleaf_it_size(const excit_t it, ssize_t *size)
+static int tleaf_it_size(const_excit_t it, ssize_t *size)
 {
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_size(data_it->levels, size);
@@ -64,7 +64,7 @@ static int tleaf_it_rewind(excit_t it)
 	return excit_rewind(data_it->levels);
 }
 
-static int tleaf_it_copy(excit_t dst_it, const excit_t src_it)
+static int tleaf_it_copy(excit_t dst_it, const_excit_t src_it)
 {
 	int err = EXCIT_SUCCESS;
 	struct tleaf_it_s *dst = dst_it->data;
@@ -111,7 +111,7 @@ error:
 	return err;
 }
 
-static int tleaf_it_pos(const excit_t it, ssize_t *value)
+static int tleaf_it_pos(const_excit_t it, ssize_t *value)
 {
 	struct tleaf_it_s *data_it = it->data;
 
@@ -130,7 +130,7 @@ static ssize_t tleaf_it_value(struct tleaf_it_s *it)
 	return val;
 }
 
-static int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
+static int tleaf_it_nth(const_excit_t it, ssize_t n, ssize_t *indexes)
 {
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_nth(data_it->levels, n, data_it->buf);
@@ -142,7 +142,7 @@ static int tleaf_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int tleaf_it_peek(const excit_t it, ssize_t *value)
+static int tleaf_it_peek(const_excit_t it, ssize_t *value)
 {
 	struct tleaf_it_s *data_it = it->data;
 	int err = excit_peek(data_it->levels, data_it->buf);
@@ -167,7 +167,7 @@ static int tleaf_it_next(excit_t it, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
+static int tleaf_it_rank(const_excit_t it, const ssize_t *indexes, ssize_t *n)
 {
 	ssize_t size;
 	int err;
@@ -197,7 +197,7 @@ static int tleaf_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-static int tleaf_it_make_levels(struct tleaf_it_s *tleaf, const excit_t *indexes,
+static int tleaf_it_make_levels(struct tleaf_it_s *tleaf, excit_t *indexes,
 			 ssize_t *order, excit_t *levels)
 {
 	ssize_t i;
@@ -262,10 +262,10 @@ error_with_levels:
 }
 
 static int tleaf_init_with_it(excit_t it,
-			      const ssize_t depth,
+			      ssize_t depth,
 			      const ssize_t *arities,
-			      const excit_t *indexes,
-			      const enum tleaf_it_policy_e policy,
+			      excit_t *indexes,
+			      enum tleaf_it_policy_e policy,
 			      const ssize_t *user_policy,
 			      excit_t levels, excit_t levels_inverse)
 {
@@ -369,7 +369,7 @@ error:
 int excit_tleaf_init(excit_t it,
 		     ssize_t depth,
 		     const ssize_t *arities,
-		     const excit_t *indexes,
+		     excit_t *indexes,
 		     enum tleaf_it_policy_e policy,
 		     const ssize_t *user_policy)
 {
@@ -394,7 +394,7 @@ static int tleaf_split_levels(excit_t levels, ssize_t depth, ssize_t n,
 	return EXCIT_SUCCESS;
 }
 
-int tleaf_it_split(const excit_t it, const ssize_t depth,
+int tleaf_it_split(const_excit_t it, const ssize_t depth,
 		   const ssize_t n, excit_t *out)
 {
 	ssize_t i;

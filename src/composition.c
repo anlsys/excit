@@ -27,7 +27,7 @@ static void composition_it_free(excit_t data)
 	excit_free(it->indexer);
 }
 
-static int composition_it_copy(excit_t dst, const excit_t src)
+static int composition_it_copy(excit_t dst, const_excit_t src)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)src->data;
 	struct composition_it_s *result = (struct composition_it_s *)dst->data;
@@ -54,7 +54,7 @@ static int composition_it_next(excit_t data, ssize_t *indexes)
 	return excit_nth(it->src, n, indexes);
 }
 
-static int composition_it_peek(const excit_t data, ssize_t *indexes)
+static int composition_it_peek(const_excit_t data, ssize_t *indexes)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)data->data;
 	ssize_t n;
@@ -65,7 +65,7 @@ static int composition_it_peek(const excit_t data, ssize_t *indexes)
 	return excit_nth(it->src, n, indexes);
 }
 
-static int composition_it_size(const excit_t data, ssize_t *size)
+static int composition_it_size(const_excit_t data, ssize_t *size)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)data->data;
 
@@ -79,7 +79,7 @@ static int composition_it_rewind(excit_t data)
 	return excit_rewind(it->indexer);
 }
 
-static int composition_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
+static int composition_it_nth(const_excit_t data, ssize_t n, ssize_t *indexes)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)data->data;
 	ssize_t p;
@@ -90,7 +90,7 @@ static int composition_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 	return excit_nth(it->src, p, indexes);
 }
 
-static int composition_it_rank(const excit_t data, const ssize_t *indexes,
+static int composition_it_rank(const_excit_t data, const ssize_t *indexes,
 			 ssize_t *n)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)data->data;
@@ -102,14 +102,14 @@ static int composition_it_rank(const excit_t data, const ssize_t *indexes,
 	return excit_rank(it->indexer, &inner_n, n);
 }
 
-static int composition_it_pos(const excit_t data, ssize_t *n)
+static int composition_it_pos(const_excit_t data, ssize_t *n)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)data->data;
 
 	return excit_pos(it->indexer, n);
 }
 
-static int composition_it_split(const excit_t data, ssize_t n, excit_t *results)
+static int composition_it_split(const_excit_t data, ssize_t n, excit_t *results)
 {
 	const struct composition_it_s *it = (const struct composition_it_s *)data->data;
 	int err = excit_split(it->indexer, n, results);

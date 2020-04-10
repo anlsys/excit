@@ -76,7 +76,7 @@ static void hilbert2d_it_free(excit_t data)
 	excit_free(it->range_it);
 }
 
-static int hilbert2d_it_copy(excit_t ddst, const excit_t dsrc)
+static int hilbert2d_it_copy(excit_t ddst, const_excit_t dsrc)
 {
 	struct hilbert2d_it_s *dst = (struct hilbert2d_it_s *)ddst->data;
 	const struct hilbert2d_it_s *src =
@@ -97,7 +97,7 @@ static int hilbert2d_it_rewind(excit_t data)
 	return excit_rewind(it->range_it);
 }
 
-static int hilbert2d_it_peek(const excit_t data, ssize_t *val)
+static int hilbert2d_it_peek(const_excit_t data, ssize_t *val)
 {
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *)data->data;
 	ssize_t d;
@@ -124,13 +124,13 @@ static int hilbert2d_it_next(excit_t data, ssize_t *val)
 	return EXCIT_SUCCESS;
 }
 
-static int hilbert2d_it_size(const excit_t data, ssize_t *size)
+static int hilbert2d_it_size(const_excit_t data, ssize_t *size)
 {
 	const struct hilbert2d_it_s *it = (struct hilbert2d_it_s *)data->data;
 	return excit_size(it->range_it, size);
 }
 
-static int hilbert2d_it_nth(const excit_t data, ssize_t n, ssize_t *val)
+static int hilbert2d_it_nth(const_excit_t data, ssize_t n, ssize_t *val)
 {
 	ssize_t d;
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *)data->data;
@@ -143,7 +143,7 @@ static int hilbert2d_it_nth(const excit_t data, ssize_t n, ssize_t *val)
 	return EXCIT_SUCCESS;
 }
 
-static int hilbert2d_it_rank(const excit_t data, const ssize_t *indexes,
+static int hilbert2d_it_rank(const_excit_t data, const ssize_t *indexes,
 			     ssize_t *n)
 {
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *)data->data;
@@ -156,14 +156,14 @@ static int hilbert2d_it_rank(const excit_t data, const ssize_t *indexes,
 	return excit_rank(it->range_it, &d, n);
 }
 
-static int hilbert2d_it_pos(const excit_t data, ssize_t *n)
+static int hilbert2d_it_pos(const_excit_t data, ssize_t *n)
 {
 	struct hilbert2d_it_s *it = (struct hilbert2d_it_s *)data->data;
 
 	return excit_pos(it->range_it, n);
 }
 
-static int hilbert2d_it_split(const excit_t data, ssize_t n, excit_t *results)
+static int hilbert2d_it_split(const_excit_t data, ssize_t n, excit_t *results)
 {
 	const struct hilbert2d_it_s *it = (struct hilbert2d_it_s *)data->data;
 	int err = excit_split(it->range_it, n, results);

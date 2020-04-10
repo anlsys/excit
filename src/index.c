@@ -94,7 +94,7 @@ static void index_it_free(excit_t it)
 		free(data_it->index);
 }
 
-static int index_it_size(const excit_t it, ssize_t *size)
+static int index_it_size(const_excit_t it, ssize_t *size)
 {
 	struct index_it_s *data_it = it->data;
 
@@ -110,7 +110,7 @@ static int index_it_rewind(excit_t it)
 	return EXCIT_SUCCESS;
 }
 
-static int index_it_copy(excit_t dst_it, const excit_t src_it)
+static int index_it_copy(excit_t dst_it, const_excit_t src_it)
 {
 	int err = EXCIT_SUCCESS;
 	struct index_it_s *dst = dst_it->data;
@@ -137,7 +137,7 @@ exit_with_values:
 	return err;
 }
 
-static int index_it_pos(const excit_t it, ssize_t *value)
+static int index_it_pos(const_excit_t it, ssize_t *value)
 {
 	if (value == NULL)
 		return EXCIT_SUCCESS;
@@ -149,7 +149,7 @@ static int index_it_pos(const excit_t it, ssize_t *value)
 	return EXCIT_SUCCESS;
 }
 
-static int index_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
+static int index_it_nth(const_excit_t it, ssize_t n, ssize_t *indexes)
 {
 	struct index_it_s *data_it = it->data;
 
@@ -161,7 +161,7 @@ static int index_it_nth(const excit_t it, ssize_t n, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int index_it_peek(const excit_t it, ssize_t *value)
+static int index_it_peek(const_excit_t it, ssize_t *value)
 {
 	struct index_it_s *data_it = it->data;
 
@@ -185,7 +185,7 @@ static int index_it_next(excit_t it, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int index_it_rank(const excit_t it, const ssize_t *indexes, ssize_t *n)
+static int index_it_rank(const_excit_t it, const ssize_t *indexes, ssize_t *n)
 {
 	struct index_it_s *data_it = it->data;
 

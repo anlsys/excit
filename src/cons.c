@@ -56,7 +56,7 @@ static void cons_it_free(excit_t data)
 	free(it->fifo.buffer);
 }
 
-static int cons_it_copy(excit_t ddst, const excit_t dsrc)
+static int cons_it_copy(excit_t ddst, const_excit_t dsrc)
 {
 	struct cons_it_s *dst = (struct cons_it_s *)ddst->data;
 	const struct cons_it_s *src = (const struct cons_it_s *)dsrc->data;
@@ -81,7 +81,7 @@ static int cons_it_copy(excit_t ddst, const excit_t dsrc)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_size(const excit_t data, ssize_t *size)
+static int cons_it_size(const_excit_t data, ssize_t *size)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
 	ssize_t tmp_size = 0;
@@ -93,7 +93,7 @@ static int cons_it_size(const excit_t data, ssize_t *size)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
+static int cons_it_nth(const_excit_t data, ssize_t n, ssize_t *indexes)
 {
 	ssize_t size;
 	int err = cons_it_size(data, &size);
@@ -115,7 +115,7 @@ static int cons_it_nth(const excit_t data, ssize_t n, ssize_t *indexes)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_rank(const excit_t data, const ssize_t *indexes,
+static int cons_it_rank(const_excit_t data, const ssize_t *indexes,
 			ssize_t *n)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
@@ -139,7 +139,7 @@ static int cons_it_rank(const excit_t data, const ssize_t *indexes,
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_pos(const excit_t data, ssize_t *n)
+static int cons_it_pos(const_excit_t data, ssize_t *n)
 {
 	ssize_t inner_n;
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
@@ -152,7 +152,7 @@ static int cons_it_pos(const excit_t data, ssize_t *n)
 	return EXCIT_SUCCESS;
 }
 
-static int cons_it_peek(const excit_t data, ssize_t *indexes)
+static int cons_it_peek(const_excit_t data, ssize_t *indexes)
 {
 	const struct cons_it_s *it = (const struct cons_it_s *)data->data;
 	int err;
