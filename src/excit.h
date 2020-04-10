@@ -58,8 +58,8 @@ enum excit_type_e {
 	 */
 	EXCIT_CONS,
 	/*!<
-	 * Iterator that stutters a certain number of times.
-	 * Builds an iterator on top of another iterator repeating the latter elements.
+	 * Iterator that repeat values a certain number of times.
+	 * Builds an iterator on top of another iterator repeating the latter's elements.
 	 * See function excit_repeat_init() for further details on this iterator's
 	 * behaviour.
 	 */
