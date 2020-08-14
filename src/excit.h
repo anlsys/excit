@@ -97,6 +97,11 @@ enum excit_type_e {
 	 * for mixing with other iterators.
 	 */
 	EXCIT_USER,
+	/*!<
+	 * Interator looping a given amount of time over another iterator.
+	 * See excit_loop_init() for further explanation.
+         */
+	EXCIT_LOOP,
 	/*!< Guard */
 	EXCIT_TYPE_MAX
 };
@@ -508,6 +513,15 @@ int excit_product_split_dim(const_excit_t it, ssize_t dim, ssize_t n,
  * Returns EXCIT_SUCCESS or an error code.
  */
 int excit_composition_init(excit_t it, excit_t src, excit_t indexer);
+
+/*
+ * Initializes a loop iterator by giving a src iterator and a number of loops to achieve.
+ * "it": a loop iterator.
+ * "src": the iterator to loop over.
+ * "n": the number of time to loop over the src iterator.
+ * Returns EXCIT_SUCCESS or an error code.
+ */
+int excit_loop_init(excit_t it, excit_t src, ssize_t n);
 
 enum tleaf_it_policy_e {
   TLEAF_POLICY_ROUND_ROBIN, /* Iterate on tree leaves in a round-robin fashion */

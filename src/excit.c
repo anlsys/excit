@@ -18,6 +18,7 @@
 #include "range.h"
 #include "index.h"
 #include "tleaf.h"
+#include "loop.h"
 
 #define CASE(val) case val: return #val; break
 
@@ -31,7 +32,9 @@ const char *excit_type_name(enum excit_type_e type)
 		CASE(EXCIT_HILBERT2D);
 		CASE(EXCIT_PRODUCT);
 		CASE(EXCIT_COMPOSITION);
+		CASE(EXCIT_TLEAF);
 		CASE(EXCIT_USER);
+		CASE(EXCIT_LOOP);
 		CASE(EXCIT_TYPE_MAX);
 	default:
 		return NULL;
@@ -134,6 +137,9 @@ excit_t excit_alloc(enum excit_type_e type)
 		break;
 	case EXCIT_TLEAF:
 		ALLOC_EXCIT(tleaf);
+		break;
+	case EXCIT_LOOP:
+		ALLOC_EXCIT(loop);
 		break;
 	default:
 		goto error;
