@@ -11,6 +11,7 @@
 #define EXCIT_H 1
 
 #include <stdlib.h>
+#include <sys/types.h>
 
 /*
  * excit library provides an interface to build multi-dimensional iterators over 
