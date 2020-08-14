@@ -22,6 +22,12 @@ AC_PROG_CC_STDC
 AC_TYPE_SIZE_T
 AC_HEADER_ASSERT
 
+#check for valgrind
+AX_VALGRIND_DFLT([helgrind], [off])
+AX_VALGRIND_DFLT([drd], [off])
+AX_VALGRIND_DFLT([sgcheck], [off])
+AX_VALGRIND_CHECK
+
 AC_CONFIG_HEADERS([src/config.h])
 
 AC_CONFIG_FILES([Makefile

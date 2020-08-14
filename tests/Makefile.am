@@ -20,3 +20,5 @@ UNIT_TESTS = excit_range excit_product excit_repeat excit_cons excit_hilbert2d e
 # all tests
 check_PROGRAMS = $(UNIT_TESTS)
 TESTS = $(UNIT_TESTS)
+
+@VALGRIND_CHECK_RULES@
