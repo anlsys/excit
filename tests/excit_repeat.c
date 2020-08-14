@@ -134,7 +134,7 @@ void test_repeat_iterator(int repeat, excit_t sit)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	excit_t it1, it2, it3;
 

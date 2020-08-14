@@ -1,4 +1,4 @@
-AM_CFLAGS = -std=c99 -Wall -Werror -pedantic
+AM_CFLAGS = -std=c99 -Wall -Wextra -Werror -pedantic
 
 lib_LTLIBRARIES = libexcit.la
 

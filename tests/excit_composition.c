@@ -100,7 +100,7 @@ void test_composition_iterator(excit_t source, excit_t indexer)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	excit_t source, indexer, source2, indexer2;
 

@@ -229,7 +229,7 @@ void test_product_split_dim(void)
 	excit_free(it);
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	excit_t its[4];
 

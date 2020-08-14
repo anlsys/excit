@@ -142,7 +142,6 @@ static void tleaf_test_scatter_policy_no_split(excit_t tleaf,
 }
 
 static void tleaf_test_round_robin_split(excit_t tleaf,
-					 const ssize_t depth,
 					 const ssize_t *arities)
 {
 	ssize_t i, value, size, cut_size;
@@ -194,7 +193,7 @@ void run_tests(const ssize_t depth, const ssize_t *arities)
 	assert(excit_rewind(rrobin) == EXCIT_SUCCESS);
 
 	/* Test of split operation on round robin policy */
-	tleaf_test_round_robin_split(rrobin, depth, arities);
+	tleaf_test_round_robin_split(rrobin, arities);
 
 	excit_free(rrobin);
 
@@ -249,7 +248,7 @@ void run_tests(const ssize_t depth, const ssize_t *arities)
 	}
 }
 
-int main(int argc, char *argv[])
+int main()
 {
 	ssize_t depth = 4;
 	const ssize_t arities_0[4] = { 4, 8, 2, 4 };

@@ -23,6 +23,7 @@ static int range_it_alloc(excit_t data)
 
 static void range_it_free(excit_t data)
 {
+	(void)data;
 }
 
 static int range_it_copy(excit_t ddst, const_excit_t dsrc)
