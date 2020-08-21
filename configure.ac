@@ -29,6 +29,9 @@ AX_VALGRIND_DFLT([drd], [off])
 AX_VALGRIND_DFLT([sgcheck], [off])
 AX_VALGRIND_CHECK
 
+# Support for cross-compiling check programs
+AM_EXTRA_RECURSIVE_TARGETS([check-programs])
+
 AC_CONFIG_HEADERS([src/config.h])
 
 AC_CONFIG_FILES([Makefile
