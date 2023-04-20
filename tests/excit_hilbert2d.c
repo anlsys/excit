@@ -109,7 +109,7 @@ void test_hilbert2d_iterator(int order)
 
 }
 
-int main()
+int main(void)
 {
 	test_hilbert2d_iterator(3);
 	test_hilbert2d_iterator(4);

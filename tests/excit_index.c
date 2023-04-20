@@ -77,7 +77,7 @@ void run_tests(const ssize_t len, const ssize_t *index)
 	}
 }
 
-int main()
+int main(void)
 {
 	ssize_t n = NTESTS;
 
