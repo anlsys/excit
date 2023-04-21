@@ -248,7 +248,7 @@ void run_tests(const ssize_t depth, const ssize_t *arities)
 	}
 }
 
-int main()
+int main(void)
 {
 	ssize_t depth = 4;
 	const ssize_t arities_0[4] = { 4, 8, 2, 4 };

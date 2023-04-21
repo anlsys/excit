@@ -100,7 +100,7 @@ void test_loop_iterator(int loop, excit_t sit)
 	}
 }
 
-int main()
+int main(void)
 {
 	excit_t it1, it2, it3;
 
