@@ -1,5 +1,3 @@
-AM_CFLAGS = -std=c99 -Wall -Wextra -Werror -pedantic
-
 lib_LTLIBRARIES = libexcit.la
 
 libexcit_la_SOURCES = excit.c \
