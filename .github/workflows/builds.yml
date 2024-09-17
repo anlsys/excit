@@ -26,7 +26,7 @@ jobs:
       - run: make
       - run: make check
       - run: make install
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: generic
@@ -53,7 +53,7 @@ jobs:
         working-directory: out
       - run: make check
         working-directory: out
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: out-of-tree
@@ -78,7 +78,7 @@ jobs:
       - run: make check-valgrind
         env:
           VALGRIND_SUPPRESSIONS_FILES: ${{ github.workspace }}/.valgrind.supp
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: valgrind
@@ -100,7 +100,7 @@ jobs:
           mkdir build
           ./configure --prefix=`pwd`/build
       - run: make distcheck
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: distcheck
