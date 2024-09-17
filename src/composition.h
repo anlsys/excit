@@ -6,7 +6,7 @@
  * For more info, see https://github.com/anlsys/excit
  *
  * SPDX-License-Identifier: BSD-3-Clause
-*******************************************************************************/
+ ******************************************************************************/
 #ifndef EXCIT_SLICE_H
 #define EXCIT_SLICE_H
 

@@ -16,5 +16,5 @@ header:
     - '**/*.h'
     - '**/*.h.in'
   paths-ignore:
-    - 'include/internal/ut*.h'
+    - 'src/dev/excit.h'
   comment: never
