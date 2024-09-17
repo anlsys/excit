@@ -4,7 +4,7 @@
  *
  * This file is part of the EXCIT project.
 >>>>>>> 043342c... [ci/quality] Add ci and fix license/authors.
- * For more info, see https://xgitlab.cels.anl.gov/argo/excit
+ * For more info, see https://github.com/anlsys/excit
  *
  * SPDX-License-Identifier: BSD-3-Clause
 *******************************************************************************/

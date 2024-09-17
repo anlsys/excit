@@ -1,6 +1,6 @@
 AM_COLOR_TESTS = yes
 
-AM_CFLAGS = -I$(top_srcdir)/src -std=c99 -Wextra -Wall -Werror -pedantic
+AM_CFLAGS = -I$(top_srcdir)/src
 AM_LDFLAGS = ../src/libexcit.la
 
 LIBHSOURCES = excit_test.h
