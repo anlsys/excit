@@ -14,7 +14,7 @@ jobs:
           target=$(git rev-parse origin/$GITHUB_BASE_REF)
           git-clang-format-12 --quiet --diff $target > clang-format-diff
           lint=$(grep -v --color=never "no modified files to format" clang-format-diff || true)
-          if [ ! -z "$lint" ]; then echo "format errors, inspect the clang-format-diff artifact for info"; exit 1; else exit 0; fi
+          if [ ! -z "$lint" ]; then echo "format errors, inspect the output clang format diff step for info"; exit 1; else exit 0; fi
         shell: bash
       - name: output clang format diff
         if: always()
