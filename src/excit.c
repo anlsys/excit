@@ -20,7 +20,9 @@
 #include "tleaf.h"
 #include "loop.h"
 
-#define CASE(val) case val: return #val
+#define CASE(val)                                                              \
+	case val:                                                              \
+		return #val
 
 const char *excit_type_name(enum excit_type_e type)
 {
